@@ -1,6 +1,7 @@
 // import * as tf from '@tensorflow/tfjs';
 
-const MODEL_URL = 'https://github.com/19521178/jsFFNet/blob/master/server/model_lstm/model.json';
+// const MODEL_URL = 'https://github.com/19521178/jsFFNet/blob/master/server/model_lstm/model.json';
+const MODEL_URL = 'https://19521178.github.io/jsFFNet/blob/master/server/model_lstm/model.json';
 
 // For Keras use tf.loadLayersModel().
 async function loadModel(){

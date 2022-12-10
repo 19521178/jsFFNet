@@ -1,4 +1,4 @@
-// import Whammy from ./client/client/
+// import Whammy from ./client/
 // import * as tf from '@tensorflow/tfjs'
 
 var fps = 15;
