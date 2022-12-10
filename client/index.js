@@ -1,7 +1,8 @@
 // import Whammy from ./client/
 // import * as tf from '@tensorflow/tfjs'
 
-var fps = 15;
+var fps = 30;
+
 var getImgDataTimes = [];
 
 const inputContainer = new InputContainer();
@@ -136,13 +137,13 @@ inputContainer.video.onloadedmetadata = () => {
             // var start_getImgData_time = Date.now();
             captureCtx.drawImage(inputContainer.video, 0, 0, outputContainer.video.width, outputContainer.video.height);
             img = captureCtx.getImageData(0, 0, outputContainer.video.width, outputContainer.video.height);
-            console.log(img);
+            // console.log(img);
             gl = tf.browser.fromPixels(captureCanvas);
-            console.log(gl);
-            outputContainer.listImage.push(gl);
+            // console.log(gl);
+            // outputContainer.listImage.push(gl);
             // var end_getImgData_time = Date.now();
             // getImgDataTimes.push(end_getImgData_time - start_getImgData_time);
-            // buffer.CookieFrame(img);
+            buffer.CookieFrame(gl);
             outputContainer.fcUpdateVideoDuration();
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
             //     let startTimeStore = Date.now();

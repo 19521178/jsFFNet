@@ -4,17 +4,17 @@ var cookieTimes = [];
 var upserverTimes = [];
 var labelTimes = [];
 var expireTimes = [];
+var result;
 
 
 
-
-function ModelResponseHandler(response, buffer){
-    // console.log(response);
-    let action = response['action'];
-    let indicesNeighbor = response['indices neighbor'];
-    console.log(response)
-    buffer.LabelFrames(action, indicesNeighbor);
-}
+// function ModelResponseHandler(response, buffer){
+//     // console.log(response);
+//     let action = response['action'];
+//     let indicesNeighbor = response['indices neighbor'];
+//     console.log(response)
+//     buffer.LabelFrames(action, indicesNeighbor);
+// }
 
 function BufferFrame(){
     this.image = undefined;
@@ -49,7 +49,10 @@ function Buffer(length, idMaxPoint, savedFrames){
             if (expiredFrame.isSelected === true){
                 savedFrames.push(expiredFrame.image);
             }
-
+            else{
+                expiredFrame.image.dispose();
+            }
+            
             delete expiredFrame;
         // }
         var end_expire_time = Date.now();
@@ -86,9 +89,10 @@ function Buffer(length, idMaxPoint, savedFrames){
 
         if (this.idNextProccessed <= this.idPoint - 1){
             this.idLastProccessed = this.idNextProccessed;
-            this.idNextProccessed = Infinity;
+            this.idNextProccessed = this.idNextProccessed+1;
             var start_upserver_time = Date.now();
             // UpserverFrame(this.listFrames[this.idLastProccessed].image, this);
+            predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)
             var end_upserver_time = Date.now();
             upserverTimes.push(end_upserver_time - start_upserver_time);
             // console.log(this.idNextProccessed, this.listFrames[this.idNextProccessed].image);
