@@ -1,5 +1,5 @@
 
-// inputVideoModule = require('./inputVideo.js')
+// inputVideoModule = require('./client/inputVideo.js')
 // console.log(inputVideoModule.blobing)
 const OutputContainer = function(fps){
     this.outputVideoContainer = document.getElementById('output-video-container');

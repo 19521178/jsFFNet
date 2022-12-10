@@ -1,9 +1,19 @@
 // import * as tf from '@tensorflow/tfjs';
 
-const MODEL_URL = './model.json';
+const MODEL_URL = 'https://github.com/19521178/jsFFNet/blob/master/server/model_lstm/model.json';
 
 // For Keras use tf.loadLayersModel().
-const model = tf.loadGraphModel(MODEL_URL);
+async function loadModel(){
+    try {
+        const model = await tf.loadGraphModel(MODEL_URL);
+        return model;
+    } catch (err) {
+        console.log(err);
+        console.log("failed load model");
+    }
+}
+const model = loadModel();
+// const model = await tf.loadGraphModel(MODEL_URL);
 
 
 // const cat = document.getElementById('cat');
