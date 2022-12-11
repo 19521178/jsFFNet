@@ -198,7 +198,8 @@ const OutputContainer = function(fps){
             this.progressBar.value = skipTo;
             this.seek.value = skipTo;
         // this.updateTimeElapsed();
-        this.renderCanvas.putImageData(this.listImage[this.idPlaying], 0, 0);
+        tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
+        // this.renderCanvas.putImageData(this.listImage[this.idPlaying], 0, 0);
         this.videoControls.dispatchEvent(this.timeUpdateEvent);
     }
 

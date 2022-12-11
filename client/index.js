@@ -1,6 +1,8 @@
 // import Whammy from ./client/
 // import * as tf from '@tensorflow/tfjs'
 
+
+
 var fps = 30;
 
 var getImgDataTimes = [];
@@ -26,6 +28,7 @@ var lengthSegment = fps * 30;
 var isFirstSegment = true;
 var idStartSegment = 0;
 
+var cap;
 var captureCanvas;
 var captureCtx;
 var convertURLCanvas;
@@ -33,7 +36,6 @@ var convertURLctx;
 var storeCanvas;
 var storeCtx;
 
-// Add functions here
 // Get access to the camera!
 // if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 //     // Not adding `{ audio: true }` since we only want video now
@@ -94,21 +96,83 @@ var storeCtx;
 //         // }
 //     });
 // }
+
+// function updatePlayButton() {
+//     this.playbackIcons.forEach((icon) => icon.classList.toggle('hidden'));
+
+//     if (this.isPlaying) {
+//         this.playButton.setAttribute('data-title', 'Play (k)');
+//     } else {
+//         this.playButton.setAttribute('data-title', 'Pause (k)');
+//     }
+// }
+var btnProcess = document.getElementById('play-process');
+var frameCapture;
+btnProcess.onclick = ()=>{
+    if (btnProcess.textContent === 'Start'){
+        btnProcess.textContent = 'Pause';
+        frameCapture = setInterval(async () => {     
+            await cap.read(srcMat);
+            await cv.imshow(captureCanvas, srcMat);
+            gl = await tf.browser.fromPixels(captureCanvas);
+            outputContainer.listImage.push(gl);
+            // buffer.CookieFrame(gl);
+            outputContainer.fcUpdateVideoDuration();
+            // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
+            //     let startTimeStore = Date.now();
+            //     storeOutput()
+            //     let endTimeStore = Date.now();
+            //     console.log("Time Store: "+ endTimeStore - startTimeStore + " miliseconds");
+            //     idStartSegment += lengthSegment;
+            //     isFirstSegment = false;
+            // }
+        }, 1000/fps);
+    }
+    else{
+        btnProcess.textContent = 'Start';
+        clearInterval(frameCapture);
+    }
+}
+
+
+const VID_WIDTH = 400;
+const VID_HEIGHT = 320;
+var hiddenVideo = document.getElementById("hidden-video");
+var srcMat;
+var dstMat;
+hiddenVideo.height = VID_HEIGHT;
+hiddenVideo.width = VID_WIDTH;
+
+
+
 const inputTag = document.querySelector("#input-tag");
-function readVideo(event) {
+async function readVideo(event) {
     if (event.target.files && event.target.files[0]) {
         const file = event.target.files[0];
         var urlBlob = URL.createObjectURL(file);
-        inputContainer.video.src = urlBlob;
-        inputContainer.video.load();
+        hiddenVideo.src = urlBlob;
+        await hiddenVideo.load();
+        cap = new cv.VideoCapture(hiddenVideo);
     }
 };
 inputTag.onchange = readVideo;
 
-inputContainer.video.onloadedmetadata = () => {
+hiddenVideo.onloadedmetadata = () => {
     // alert("Video on load");
-    outputContainer.video.width = inputContainer.video.clientWidth;
-    outputContainer.video.height = inputContainer.video.clientHeight;
+    hiddenVideo.play();
+    hiddenVideo.pause();
+
+    hiddenVideo.clientHeight = VID_HEIGHT;
+    hiddenVideo.clientWidth = VID_WIDTH;
+
+    inputContainer.video.width = VID_WIDTH;
+    inputContainer.video.height = VID_HEIGHT;
+
+    outputContainer.video.width = VID_WIDTH;
+    outputContainer.video.height = VID_HEIGHT;
+
+    srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
+    dstMat = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
 
     captureCanvas = document.createElement('canvas');
     captureCanvas.width = outputContainer.video.width;
@@ -126,35 +190,7 @@ inputContainer.video.onloadedmetadata = () => {
     storeCtx = storeCanvas.getContext('2d', { willReadFrequently: true });
 
     
-    captureBlob = setInterval(() => {
-        if(inputContainer.video.paused
-            // || inputContainer.video.currentTime > 3
-            )
-            {
-                inputContainer.video.pause();
-            }
-        else{            
-            // var start_getImgData_time = Date.now();
-            captureCtx.drawImage(inputContainer.video, 0, 0, outputContainer.video.width, outputContainer.video.height);
-            img = captureCtx.getImageData(0, 0, outputContainer.video.width, outputContainer.video.height);
-            // console.log(img);
-            gl = tf.browser.fromPixels(captureCanvas);
-            // console.log(gl);
-            // outputContainer.listImage.push(gl);
-            // var end_getImgData_time = Date.now();
-            // getImgDataTimes.push(end_getImgData_time - start_getImgData_time);
-            buffer.CookieFrame(gl);
-            outputContainer.fcUpdateVideoDuration();
-            // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
-            //     let startTimeStore = Date.now();
-            //     storeOutput()
-            //     let endTimeStore = Date.now();
-            //     console.log("Time Store: "+ endTimeStore - startTimeStore + " miliseconds");
-            //     idStartSegment += lengthSegment;
-            //     isFirstSegment = false;
-            // }
-        }
-    }, 1000/fps);
+    
 };
 
 
