@@ -18,6 +18,7 @@ var result;
 function BufferFrame(){
     this.image = undefined;
     this.isSelected = false;
+    this.idCookie = 0;
 }
 
 function Buffer(length, idMaxPoint, savedFrames){
@@ -33,6 +34,7 @@ function Buffer(length, idMaxPoint, savedFrames){
 
     this.countExpired = 0;
     this.Expired = function(){
+        console.log("Start Expire")
         var start_expire_time = Date.now();
         // if (this.idNextProccessed >= 0){
             this.countExpired+=1;
@@ -45,13 +47,9 @@ function Buffer(length, idMaxPoint, savedFrames){
             this.idPoint -= 1;
 
             if (expiredFrame.isSelected === true){
-                savedFrames.push(expiredFrame.image);
+                savedFrames.push(expiredFrame.idCookie);
             }
-            else{
-                expiredFrame.image.dispose();
-                console.log("Expire Dispose")
-            }
-            
+            expiredFrame.image.dispose();
             delete expiredFrame;
         // }
         var end_expire_time = Date.now();
@@ -72,12 +70,11 @@ function Buffer(length, idMaxPoint, savedFrames){
 
         for(let idNeighbor of indicesNeighbor){
             try{
-                this.listFrames[idNeighbor].isSelected = true;
+                this.listFrames[this.idNextProccessed + idNeighbor].isSelected = true;
             }
             catch{
-                console.log('miss pp');
+                console.log('miss pp', this.idNextProccessed + idNeighbor);
             }
-
         }
         var end_label_time = Date.now();
         labelTimes.push(end_label_time-start_label_time);
@@ -90,11 +87,13 @@ function Buffer(length, idMaxPoint, savedFrames){
         console.log('Count cookie: ' + this.countCookie);
         var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
+        this.listFrames[this.idPoint].idCookie = this.countCookie - 1;
         this.idPoint += 1;
 
         if (this.idNextProccessed <= this.idPoint - 1){
+            console.log("Start Upserver", this.idNextProccessed);
             this.idLastProccessed = this.idNextProccessed;
-            this.idNextProccessed = this.idNextProccessed+1;
+            this.idNextProccessed = Infinity;
             var start_upserver_time = Date.now();
             // UpserverFrame(this.listFrames[this.idLastProccessed].image, this);
             predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)

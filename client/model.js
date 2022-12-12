@@ -9,7 +9,8 @@ async function loadMobileNet(){
     try {
         MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
         //warm-up model
-        console.log(MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
+        console.log(await MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
+        alert('MobileNet loaded successfully')
     } catch (err) {
         console.log(err);
         console.log("failed load model");

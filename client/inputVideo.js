@@ -30,6 +30,7 @@ const InputContainer = function(fps, idContainer, hiddenVideo){
     this.fps = fps;
     this.renderInterval;
     this.hiddenVideo = hiddenVideo;
+
     this.fcTogglePlay = togglePlay;
     this.fcUpdatePlayButton = updatePlayButton;
     this.fcInitializeVideo = initializeVideo;

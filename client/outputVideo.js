@@ -1,7 +1,7 @@
 
 // inputVideoModule = require('./inputVideo.js')
 // console.log(inputVideoModule.blobing)
-const OutputContainer = function(fps, idContainer){
+const OutputContainer = function(fps, idContainer, hiddenVideo){
     this.outputVideoContainer = document.getElementById(idContainer);
     this.video = this.outputVideoContainer.querySelector('#video');
     this.videoControls = this.outputVideoContainer.querySelector('#video-controls');
@@ -23,7 +23,7 @@ const OutputContainer = function(fps, idContainer){
     this.fullscreenIcons = this.fullscreenButton.querySelectorAll('use');
     this.pipButton = this.outputVideoContainer.querySelector('#pip-button');
 
-    // this.renderCanvas = this.video.getContext('2d', { willReadFrequently: true });
+    this.videoCtx = this.video.getContext('2d', { willReadFrequently: true });
     this.idPlaying = 0;
     this.lenVideo = 0;
     this.listImage = [];
@@ -32,7 +32,7 @@ const OutputContainer = function(fps, idContainer){
     this.isStopped = false;
     this.fps = fps;
     this.renderInterval;
-
+    this.hiddenVideo = hiddenVideo;
 
     this.fcTogglePlay = togglePlay;
     this.fcUpdatePlayButton = updatePlayButton;
@@ -64,7 +64,7 @@ const OutputContainer = function(fps, idContainer){
 
 
 
-    function play(){
+    async function play(){
         this.isPlaying = true;
         this.isPaused = false;
         this.renderInterval = setInterval(() => {
@@ -77,10 +77,10 @@ const OutputContainer = function(fps, idContainer){
                 this.fcTogglePlay();
             }
             else{
-                tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
-                this.videoControls.dispatchEvent(this.timeUpdateEvent);
+                this.displaySrcTime((this.listImage[this.idPlaying]+1)/this.fps);
             }
         }, 1000/this.fps);
+        // this.hiddenVideo.play();
     }
 
     function pause(){
@@ -90,6 +90,7 @@ const OutputContainer = function(fps, idContainer){
             clearInterval(this.renderInterval);
         }
         catch{}        
+        // this.hiddenVideo.pause();
         this.fcShowControls();
     }
 
@@ -191,17 +192,30 @@ const OutputContainer = function(fps, idContainer){
 
     // skipAhead jumps to a different point in the video when the progress bar
     // is clicked
+    this.displaySrcTime = async (time)=>{
+        this.hiddenVideo.currentTime = time;
+        // await this.hiddenVideo.play();
+        // await this.hiddenVideo.pause();
+        this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
+        this.videoControls.dispatchEvent(this.timeUpdateEvent);
+        // setTimeout(()=>{
+            
+        // }, 10)
+        // console.log(this.hiddenVideo.currentTime);
+        
+    }
+
     function skipAhead(event) {
         const skipTo = event.target.dataset.seek
             ? event.target.dataset.seek
             : event.target.value;
         console.log(skipTo);
         this.idPlaying = skipTo - 1;
-        this.progressBar.value = skipTo;
-        this.seek.value = skipTo;
+        // this.progressBar.value = skipTo;
+        // this.seek.value = skipTo;
         // this.updateTimeElapsed();
-        tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
-        this.videoControls.dispatchEvent(this.timeUpdateEvent);
+        this.displaySrcTime((this.listImage[this.idPlaying]+1)/this.fps);
+        console.log(this.hiddenVideo.currentTime);
     }
 
     // updateVolume updates the video's volume

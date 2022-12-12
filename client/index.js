@@ -23,14 +23,14 @@ if (true) {
 const outputHiddenVideo = document.createElement('video');
 outputHiddenVideo.style.display = 'none';
 outputHiddenVideo.muted = true;
-const outputContainer = new OutputContainer(fps, 'output-video-container');
+const outputContainer = new OutputContainer(fps, 'output-video-container', outputHiddenVideo);
 // const videoWorks = !!document.createElement('video').canPlayType;
 if (true) {
     // outputContainer.video.controls = false;
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new Buffer(length=120, idMaxPoint=90, savedFrames=outputContainer.listImage);
+var buffer = new Buffer(length=120, idMaxPoint=60, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
@@ -95,7 +95,9 @@ async function readVideo(event) {
         var urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
         inputHiddenVideo.src = urlBlob;
+        outputHiddenVideo.src = urlBlob;
         await inputHiddenVideo.load();
+        await outputHiddenVideo.load();
         await hiddenVideo.load();
         // cap = new cv.VideoCapture(hiddenVideo);
     }
@@ -113,6 +115,9 @@ hiddenVideo.onloadedmetadata = () => {
     inputHiddenVideo.clientHeight = VID_HEIGHT;
     inputHiddenVideo.clientWidth = VID_WIDTH;
 
+    outputHiddenVideo.clientHeight = VID_HEIGHT;
+    outputHiddenVideo.clientWidth = VID_WIDTH;
+
     inputContainer.video.width = VID_WIDTH;
     inputContainer.video.height = VID_HEIGHT;
 
@@ -125,6 +130,10 @@ hiddenVideo.onloadedmetadata = () => {
     captureCanvas.width = outputContainer.video.width;
     captureCanvas.height = outputContainer.video.height;
     captureCtx = captureCanvas.getContext('2d');
+
+    
+    outputHiddenVideo.play();
+    // outputHiddenVideo.pause();
 
 
     // storeCanvas = document.createElement('canvas');
