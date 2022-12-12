@@ -1,8 +1,8 @@
 
 // inputVideoModule = require('./inputVideo.js')
 // console.log(inputVideoModule.blobing)
-const OutputContainer = function(fps){
-    this.outputVideoContainer = document.getElementById('output-video-container');
+const OutputContainer = function(fps, idContainer){
+    this.outputVideoContainer = document.getElementById(idContainer);
     this.video = this.outputVideoContainer.querySelector('#video');
     this.videoControls = this.outputVideoContainer.querySelector('#video-controls');
     this.playButton = this.outputVideoContainer.querySelector('#play');
@@ -23,7 +23,7 @@ const OutputContainer = function(fps){
     this.fullscreenIcons = this.fullscreenButton.querySelectorAll('use');
     this.pipButton = this.outputVideoContainer.querySelector('#pip-button');
 
-    this.renderCanvas = this.video.getContext('2d', { willReadFrequently: true });
+    // this.renderCanvas = this.video.getContext('2d', { willReadFrequently: true });
     this.idPlaying = 0;
     this.lenVideo = 0;
     this.listImage = [];
@@ -194,9 +194,10 @@ const OutputContainer = function(fps){
         const skipTo = event.target.dataset.seek
             ? event.target.dataset.seek
             : event.target.value;
-            this.idPlaying = skipTo - 1;
-            this.progressBar.value = skipTo;
-            this.seek.value = skipTo;
+        console.log(skipTo);
+        this.idPlaying = skipTo - 1;
+        this.progressBar.value = skipTo;
+        this.seek.value = skipTo;
         // this.updateTimeElapsed();
         tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
         // this.renderCanvas.putImageData(this.listImage[this.idPlaying], 0, 0);

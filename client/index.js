@@ -7,14 +7,18 @@ var fps = 30;
 
 var getImgDataTimes = [];
 
-const inputContainer = new InputContainer();
-const videoWorks = !!document.createElement('video').canPlayType;
-if (videoWorks) {
-    inputContainer.video.controls = false;
+const inputContainer = new OutputContainer(fps, 'input-video-container');
+if (true) {
+    // outputContainer.video.controls = false;
     inputContainer.videoControls.classList.remove('hidden');
 }
+// const videoWorks = !!document.createElement('video').canPlayType;
+// if (videoWorks) {
+//     inputContainer.video.controls = false;
+//     inputContainer.videoControls.classList.remove('hidden');
+// }
 
-const outputContainer = new OutputContainer(fps);
+const outputContainer = new OutputContainer(fps, 'output-video-container');
 // const videoWorks = !!document.createElement('video').canPlayType;
 if (true) {
     // outputContainer.video.controls = false;
@@ -24,9 +28,9 @@ if (true) {
 var buffer = new Buffer(length=120, idMaxPoint=90, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
-var lengthSegment = fps * 30;
-var isFirstSegment = true;
-var idStartSegment = 0;
+// var lengthSegment = fps * 30;
+// var isFirstSegment = true;
+// var idStartSegment = 0;
 
 var cap;
 var captureCanvas;
@@ -115,7 +119,8 @@ btnProcess.onclick = ()=>{
             await cap.read(srcMat);
             await cv.imshow(captureCanvas, srcMat);
             gl = await tf.browser.fromPixels(captureCanvas);
-            outputContainer.listImage.push(gl);
+            inputContainer.listImage.push(gl);
+            inputContainer.fcUpdateVideoDuration();
             // buffer.CookieFrame(gl);
             outputContainer.fcUpdateVideoDuration();
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
@@ -127,10 +132,12 @@ btnProcess.onclick = ()=>{
             //     isFirstSegment = false;
             // }
         }, 1000/fps);
+        hiddenVideo.play();
     }
     else{
         btnProcess.textContent = 'Start';
         clearInterval(frameCapture);
+        hiddenVideo.pause();
     }
 }
 
@@ -139,7 +146,6 @@ const VID_WIDTH = 400;
 const VID_HEIGHT = 320;
 var hiddenVideo = document.getElementById("hidden-video");
 var srcMat;
-var dstMat;
 hiddenVideo.height = VID_HEIGHT;
 hiddenVideo.width = VID_WIDTH;
 
@@ -172,22 +178,16 @@ hiddenVideo.onloadedmetadata = () => {
     outputContainer.video.height = VID_HEIGHT;
 
     srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
-    dstMat = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
 
     captureCanvas = document.createElement('canvas');
     captureCanvas.width = outputContainer.video.width;
     captureCanvas.height = outputContainer.video.height;
-    captureCtx = captureCanvas.getContext('2d', { willReadFrequently: true });
 
-    convertURLCanvas = document.createElement('canvas');
-    convertURLCanvas.width = outputContainer.video.width;
-    convertURLCanvas.height = outputContainer.video.height;
-    convertURLctx = convertURLCanvas.getContext('2d', { willReadFrequently: true });
 
-    storeCanvas = document.createElement('canvas');
-    storeCanvas.width = outputContainer.video.width;
-    storeCanvas.height = outputContainer.video.height;
-    storeCtx = storeCanvas.getContext('2d', { willReadFrequently: true });
+    // storeCanvas = document.createElement('canvas');
+    // storeCanvas.width = outputContainer.video.width;
+    // storeCanvas.height = outputContainer.video.height;
+    // storeCtx = storeCanvas.getContext('2d', { willReadFrequently: true });
 
     
     
@@ -195,17 +195,17 @@ hiddenVideo.onloadedmetadata = () => {
 
 
 
-function storeOutput(){
-    const idEndSegment = Math.min(outputContainer.listImage.length, idStartSegment + lengthSegment);
-    var listURL = outputContainer.listImage.slice(idStartSegment, idEndSegment).forEach(element => {
-        storeCtx.putImageData(element, 0, 0);
-        return storeCanvas.toDataURL('image/webp', quality=1);
-    });
-    if (isFirstSegment == true){
-        var storeSegmentVideo = Whammy.fromImageArray(listURL, fps);
-        console.log(storeSegmentVideo);
-    }
-}
+// function storeOutput(){
+//     const idEndSegment = Math.min(outputContainer.listImage.length, idStartSegment + lengthSegment);
+//     var listURL = outputContainer.listImage.slice(idStartSegment, idEndSegment).forEach(element => {
+//         storeCtx.putImageData(element, 0, 0);
+//         return storeCanvas.toDataURL('image/webp', quality=1);
+//     });
+//     if (isFirstSegment == true){
+//         var storeSegmentVideo = Whammy.fromImageArray(listURL, fps);
+//         console.log(storeSegmentVideo);
+//     }
+// }
 
 
 

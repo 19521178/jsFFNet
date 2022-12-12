@@ -22,8 +22,6 @@
             });
         }
     </script> -->
-    <canvas id="test-canvas" width="400" height="320"></canvas>
-
     <video class="video" id="hidden-video" hidden width="320" height="240"></video>
 
     <input type="file" accept="video/*" id="input-tag"/>
@@ -45,9 +43,7 @@
                 </svg>
             </div>
     
-            <video controls class="video" id="video" preload="metadata" poster="./poster.jpg" >
-                <!-- <source src="video.mp4" type="video/mp4"></source> -->
-            </video>
+            <canvas id="video"> </canvas>
     
             <div class="video-controls hidden" id="video-controls">
                 <div class="video-progress">
@@ -116,7 +112,7 @@
                 <source src="video.mp4" type="video/mp4"></source>
             </video> -->
 
-            <canvas id="video" > </canvas>
+            <canvas id="video"> </canvas>
     
             <div class="video-controls hidden" id="video-controls">
                 <div class="video-progress">

@@ -72,7 +72,13 @@ function Buffer(length, idMaxPoint, savedFrames){
         this.listFrames[this.idNextProccessed].isSelected = true;
 
         for(let idNeighbor of indicesNeighbor){
-            this.listFrames[idNeighbor].isSelected = true;
+            try{
+                this.listFrames[idNeighbor].isSelected = true;
+            }
+            catch{
+                console.log('miss pp');
+            }
+
         }
         var end_label_time = Date.now();
         labelTimes.push(end_label_time-start_label_time);
