@@ -9,6 +9,7 @@ var getImgDataTimes = [];
 
 const inputHiddenVideo = document.createElement('video');
 inputHiddenVideo.style.display = 'none';
+inputHiddenVideo.muted = true;
 const inputContainer = new InputContainer(fps, 'input-video-container', inputHiddenVideo);
 if (true) {
     // outputContainer.video.controls = false;
@@ -19,7 +20,9 @@ if (true) {
 //     inputContainer.video.controls = false;
 //     inputContainer.videoControls.classList.remove('hidden');
 // }
-
+const outputHiddenVideo = document.createElement('video');
+outputHiddenVideo.style.display = 'none';
+outputHiddenVideo.muted = true;
 const outputContainer = new OutputContainer(fps, 'output-video-container');
 // const videoWorks = !!document.createElement('video').canPlayType;
 if (true) {
@@ -34,13 +37,13 @@ var buffer = new Buffer(length=120, idMaxPoint=90, savedFrames=outputContainer.l
 // var isFirstSegment = true;
 // var idStartSegment = 0;
 
-var cap;
+// var cap;
 var captureCanvas;
 var captureCtx;
-var convertURLCanvas;
-var convertURLctx;
-var storeCanvas;
-var storeCtx;
+// var convertURLCanvas;
+// var convertURLctx;
+// var storeCanvas;
+// var storeCtx;
 
 var btnProcess = document.getElementById('play-process');
 var frameCapture;
@@ -48,13 +51,14 @@ btnProcess.onclick = ()=>{
     if (btnProcess.textContent === 'Start'){
         btnProcess.textContent = 'Pause';
         frameCapture = setInterval(async () => {     
-            await cap.read(srcMat);
-            await cv.imshow(captureCanvas, srcMat);
+            // await cap.read(srcMat);
+            // await cv.imshow(captureCanvas, srcMat);
+            captureCtx.drawImage(hiddenVideo, 0, 0, VID_WIDTH, VID_HEIGHT);
             gl = await tf.browser.fromPixels(captureCanvas);
             // inputContainer.listImage.push(gl);
             inputContainer.lenVideo += 1;
             inputContainer.fcUpdateVideoDuration();
-            // buffer.CookieFrame(gl);
+            buffer.CookieFrame(gl);
             outputContainer.fcUpdateVideoDuration();
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
             //     let startTimeStore = Date.now();
@@ -78,7 +82,7 @@ btnProcess.onclick = ()=>{
 const VID_WIDTH = 400;
 const VID_HEIGHT = 320;
 var hiddenVideo = document.getElementById("hidden-video");
-var srcMat;
+// var srcMat;
 hiddenVideo.height = VID_HEIGHT;
 hiddenVideo.width = VID_WIDTH;
 
@@ -93,7 +97,7 @@ async function readVideo(event) {
         inputHiddenVideo.src = urlBlob;
         await inputHiddenVideo.load();
         await hiddenVideo.load();
-        cap = new cv.VideoCapture(hiddenVideo);
+        // cap = new cv.VideoCapture(hiddenVideo);
     }
 };
 inputTag.onchange = readVideo;
@@ -115,11 +119,12 @@ hiddenVideo.onloadedmetadata = () => {
     outputContainer.video.width = VID_WIDTH;
     outputContainer.video.height = VID_HEIGHT;
 
-    srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
+    // srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
 
     captureCanvas = document.createElement('canvas');
     captureCanvas.width = outputContainer.video.width;
     captureCanvas.height = outputContainer.video.height;
+    captureCtx = captureCanvas.getContext('2d');
 
 
     // storeCanvas = document.createElement('canvas');

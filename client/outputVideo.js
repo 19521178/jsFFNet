@@ -319,7 +319,7 @@ const OutputContainer = function(fps, idContainer){
             return;
         }
 
-        this.videoControls.classList.add('hide');
+        // this.videoControls.classList.add('hide');
     }
 
     // showControls displays the video controls

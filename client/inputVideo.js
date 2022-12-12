@@ -198,6 +198,7 @@ const InputContainer = function(fps, idContainer, hiddenVideo){
         this.seek.value = skipTo;
         // this.updateTimeElapsed();
         this.hiddenVideo.currentTime = skipTo/this.fps;
+        this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
         this.videoControls.dispatchEvent(this.timeUpdateEvent);
     }
 
@@ -316,7 +317,7 @@ const InputContainer = function(fps, idContainer, hiddenVideo){
             return;
         }
 
-        this.videoControls.classList.add('hide');
+        // this.videoControls.classList.add('hide');
     }
 
     // showControls displays the video controls

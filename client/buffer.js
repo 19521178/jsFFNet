@@ -1,5 +1,4 @@
 
-RESOURCE_URL = 'http://127.0.0.1:5000/frame';
 var cookieTimes = [];
 var upserverTimes = [];
 var labelTimes = [];
@@ -19,7 +18,6 @@ var result;
 function BufferFrame(){
     this.image = undefined;
     this.isSelected = false;
-    this.isProccessed = false;
 }
 
 function Buffer(length, idMaxPoint, savedFrames){
@@ -51,6 +49,7 @@ function Buffer(length, idMaxPoint, savedFrames){
             }
             else{
                 expiredFrame.image.dispose();
+                console.log("Expire Dispose")
             }
             
             delete expiredFrame;
@@ -67,9 +66,9 @@ function Buffer(length, idMaxPoint, savedFrames){
         this.countLabel+=1;
         var start_label_time = Date.now();
         this.idNextProccessed = this.idLastProccessed + action;
-        // 2 lines below may not be used
-        this.listFrames[this.idNextProccessed].isProccessed = true;
-        this.listFrames[this.idNextProccessed].isSelected = true;
+        // // 2 lines below may not be used
+        // this.listFrames[this.idNextProccessed].isProccessed = true;
+        // this.listFrames[this.idNextProccessed].isSelected = true;
 
         for(let idNeighbor of indicesNeighbor){
             try{

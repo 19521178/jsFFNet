@@ -105,7 +105,7 @@ function extendBothFormula(action){
 function handlerAction(probs, buffer){
     // probs shape [1, 25] so need squeeze to shape [25] in order to can argmax,
     // .dataSync()[0] to convert integer GPU to CPU
-    action = tf.argMax(tf.squeeze(probs, 0)).dataSync()[0];
+    action = tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
 
     // Define which neighbor will be selected, Ex: output [-4, -2, 0, 2, 4]
     const indicesNeighbor = extendBothFormula(action);
