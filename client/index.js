@@ -7,7 +7,9 @@ var fps = 30;
 
 var getImgDataTimes = [];
 
-const inputContainer = new OutputContainer(fps, 'input-video-container');
+const inputHiddenVideo = document.createElement('video');
+inputHiddenVideo.style.display = 'none';
+const inputContainer = new InputContainer(fps, 'input-video-container', inputHiddenVideo);
 if (true) {
     // outputContainer.video.controls = false;
     inputContainer.videoControls.classList.remove('hidden');
@@ -40,76 +42,6 @@ var convertURLctx;
 var storeCanvas;
 var storeCtx;
 
-// Get access to the camera!
-// if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-//     // Not adding `{ audio: true }` since we only want video now
-//     navigator.mediaDevices.getUserMedia({audio: false, 
-//         video: true
-//         // video: {
-//         //     mandatory: {
-//         //     minWidth: 768,
-//         //     minHeight: 768,
-//         //     minFrameRate: fps
-//         // }}
-//     }).then(function(stream) {
-//         inputContainer.video.srcObject = stream;
-//         // video.src = window.URL.createObjectURL(stream)
-//         inputContainer.video.play();
-//         inputContainer.video.onloadedmetadata = () => {
-//             outputContainer.video.width = inputContainer.video.clientWidth;
-//             outputContainer.video.height = inputContainer.video.clientHeight;
-
-//             captureCanvas = document.createElement('canvas');
-//             captureCanvas.width = outputContainer.video.width;
-//             captureCanvas.height = outputContainer.video.height;
-//             captureCtx = captureCanvas.getContext('2d', { willReadFrequently: true });
-
-//             convertURLCanvas = document.createElement('canvas');
-//             convertURLCanvas.width = outputContainer.video.width;
-//             convertURLCanvas.height = outputContainer.video.height;
-//             convertURLctx = convertURLCanvas.getContext('2d', { willReadFrequently: true });
-
-//             captureBlob = setInterval(() => {
-//                 if(inputContainer.video.paused || inputContainer.video.currentTime > 5){}
-//                 else{
-//                     // alert('Thay doi kich thuoc');
-//                     // outputContainer.video.width = inputContainer.video.clientWidth;
-//                     // outputContainer.video.height = inputContainer.video.clientHeight;
-                    
-//                     captureCtx.drawImage(inputContainer.video, 0, 0, outputContainer.video.width, outputContainer.video.height);
-//                     // imgURL = captureCanvas.toDataURL('image/png');
-//                     img = captureCtx.getImageData(0, 0, outputContainer.video.width, outputContainer.video.height);
-//                     buffer.CookieFrame(img);
-//                     outputContainer.fcUpdateVideoDuration();
-//                 }
-//             }, 1000/fps);
-//         };
-        
-//         // mediaRecorder = new MediaRecorder(stream);
-//         // // let chunks = [];//Cria uma matriz para receber as parte.
-//         // mediaRecorder.ondataavailable = (data) => {
-//         //     console.log('recorder available');
-//         //     // chunks.push(data.data)//Vai adicionando as partes na matriz
-//         //     blobing = new Blob(data.data, {type: 'image/png'});
-//         //     console.log(num_show_blob, blob);
-//         // };
-//         // mediaRecorder.onstop = () => {//Quando ativar a função parar a gravação
-//         // //Cria o BLOB com as partes acionadas na Matriz
-//         //     // const blob = new Blob(chunks, { type: 'audio/wav' });
-//         //     // alert('Media Recorder Stopped', blob)
-//         // }
-//     });
-// }
-
-// function updatePlayButton() {
-//     this.playbackIcons.forEach((icon) => icon.classList.toggle('hidden'));
-
-//     if (this.isPlaying) {
-//         this.playButton.setAttribute('data-title', 'Play (k)');
-//     } else {
-//         this.playButton.setAttribute('data-title', 'Pause (k)');
-//     }
-// }
 var btnProcess = document.getElementById('play-process');
 var frameCapture;
 btnProcess.onclick = ()=>{
@@ -119,7 +51,8 @@ btnProcess.onclick = ()=>{
             await cap.read(srcMat);
             await cv.imshow(captureCanvas, srcMat);
             gl = await tf.browser.fromPixels(captureCanvas);
-            inputContainer.listImage.push(gl);
+            // inputContainer.listImage.push(gl);
+            inputContainer.lenVideo += 1;
             inputContainer.fcUpdateVideoDuration();
             // buffer.CookieFrame(gl);
             outputContainer.fcUpdateVideoDuration();
@@ -157,6 +90,8 @@ async function readVideo(event) {
         const file = event.target.files[0];
         var urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
+        inputHiddenVideo.src = urlBlob;
+        await inputHiddenVideo.load();
         await hiddenVideo.load();
         cap = new cv.VideoCapture(hiddenVideo);
     }
@@ -170,6 +105,9 @@ hiddenVideo.onloadedmetadata = () => {
 
     hiddenVideo.clientHeight = VID_HEIGHT;
     hiddenVideo.clientWidth = VID_WIDTH;
+
+    inputHiddenVideo.clientHeight = VID_HEIGHT;
+    inputHiddenVideo.clientWidth = VID_WIDTH;
 
     inputContainer.video.width = VID_WIDTH;
     inputContainer.video.height = VID_HEIGHT;

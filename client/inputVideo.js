@@ -1,6 +1,6 @@
 // Select elements here
-const InputContainer = function(){
-    this.inputVideoContainer = document.getElementById('input-video-container');
+const InputContainer = function(fps, idContainer, hiddenVideo){
+    this.inputVideoContainer = document.getElementById(idContainer);
     this.video = this.inputVideoContainer.querySelector('#video');
     this.videoControls = this.inputVideoContainer.querySelector('#video-controls');
     this.playButton = this.inputVideoContainer.querySelector('#play');
@@ -21,9 +21,19 @@ const InputContainer = function(){
     this.fullscreenIcons = this.fullscreenButton.querySelectorAll('use');
     this.pipButton = this.inputVideoContainer.querySelector('#pip-button');
 
+    this.videoCtx = this.video.getContext('2d');
+    this.idPlaying = 0;
+    this.lenVideo = 0;
+    this.isPlaying = false;
+    this.isPaused = true;
+    this.isStopped = false;
+    this.fps = fps;
+    this.renderInterval;
+    this.hiddenVideo = hiddenVideo;
     this.fcTogglePlay = togglePlay;
     this.fcUpdatePlayButton = updatePlayButton;
     this.fcInitializeVideo = initializeVideo;
+    this.fcUpdateVideoDuration = updateVideoDuration;
     this.fcUpdateTimeElapsed = updateTimeElapsed;
     this.fcStoreFrame = storeFrame;
     this.fcUpdateProgress = updateProgress;
@@ -43,13 +53,50 @@ const InputContainer = function(){
     // togglePlay toggles the playback state of the video.
     // If the video playback is paused or ended, the video is played
     // otherwise, the video is paused
-    function togglePlay() {
-        if (this.video.paused || this.video.ended) {
-            this.video.play();
-            // mediaRecorder.play()
-        } else {
-            this.video.pause();
+    this.play = play;
+    this.pause = pause;
+
+    this.timeUpdateEvent = new Event('timeupdate');
+
+
+
+    function play(){
+        this.isPlaying = true;
+        this.isPaused = false;
+        this.renderInterval = setInterval(() => {
+            this.idPlaying += 1;
+            if (this.idPlaying >= this.lenVideo){
+                this.idPlaying -= 1;
+                console.log(this.idPlaying);
+                
+                // this.pause();
+                this.fcTogglePlay();
+            }
+            else{
+                this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
+                this.videoControls.dispatchEvent(this.timeUpdateEvent);
+            }
+        }, 1000/this.fps);
+        this.hiddenVideo.play();
+    }
+
+    function pause(){
+        this.isPlaying = false;
+        this.isPaused = true;
+        try{
+            clearInterval(this.renderInterval);
         }
+        catch{}
+        this.hiddenVideo.pause();
+        this.fcShowControls();
+    }
+    function togglePlay() {
+        if (this.isPaused || this.isStopped) {
+            this.play();
+        } else {
+            this.pause();
+        }
+        this.fcUpdatePlayButton();
     }
 
     // updatePlayButton updates the playback icon and tooltip
@@ -57,7 +104,7 @@ const InputContainer = function(){
     function updatePlayButton() {
         this.playbackIcons.forEach((icon) => icon.classList.toggle('hidden'));
 
-        if (this.video.paused) {
+        if (this.isPlaying) {
             this.playButton.setAttribute('data-title', 'Play (k)');
         } else {
             this.playButton.setAttribute('data-title', 'Pause (k)');
@@ -87,27 +134,27 @@ const InputContainer = function(){
     // initializeVideo sets the video duration, and maximum value of the
     // progressBar
     function initializeVideo() {
-        const videoDuration = Math.round(this.video.duration);
-        this.seek.setAttribute('max', videoDuration);
-        this.progressBar.setAttribute('max', videoDuration);
+        const videoDuration = Math.round(this.lenVideo/this.fps);
+        this.seek.setAttribute('max', this.lenVideo);
+        this.progressBar.setAttribute('max', this.lenVideo);
         const time = formatTime(videoDuration);
         this.duration.innerText = `${time.minutes}:${time.seconds}`;
         this.duration.setAttribute('datetime', `${time.minutes}m ${time.seconds}s`);
     }
 
-    // function updateVideoDuration(){
-    //     const videoDuration = Math.round(video.duration);
-    //     seek.setAttribute('max', videoDuration);
-    //     progressBar.setAttribute('max', videoDuration);
-    //     const time = formatTime(videoDuration);
-    //     duration.innerText = `${time.minutes}:${time.seconds}`;
-    //     duration.setAttribute('datetime', `${time.minutes}m ${time.seconds}s`);
-    // }
+    function updateVideoDuration(){
+        const videoDuration = Math.round(this.lenVideo/this.fps);
+        this.seek.setAttribute('max', this.lenVideo);
+        this.progressBar.setAttribute('max', this.lenVideo);
+        const time = formatTime(videoDuration);
+        this.duration.innerText = `${time.minutes}:${time.seconds}`;
+        this.duration.setAttribute('datetime', `${time.minutes}m ${time.seconds}s`);
+    }
 
     // updateTimeElapsed indicates how far through the video
     // the current playback is by updating the timeElapsed element
     function updateTimeElapsed() {
-        const time = formatTime(Math.round(this.video.currentTime));
+        const time = formatTime(Math.round((this.idPlaying+1)/this.fps));
         this.timeElapsed.innerText = `${time.minutes}:${time.seconds}`;
         this.timeElapsed.setAttribute('datetime', `${time.minutes}m ${time.seconds}s`);
     }
@@ -120,8 +167,8 @@ const InputContainer = function(){
     // updateProgress indicates how far through the video
     // the current playback is by updating the progress bar
     function updateProgress() {
-        this.seek.value = Math.floor(this.video.currentTime);
-        this.progressBar.value = Math.floor(this.video.currentTime);
+        this.seek.value = this.idPlaying;
+        this.progressBar.value = this.idPlaying;
     }
 
     // updateSeekTooltip uses the position of the mouse on the progress bar to
@@ -133,7 +180,7 @@ const InputContainer = function(){
             parseInt(event.target.getAttribute('max'), 10)
         );
         this.seek.setAttribute('data-seek', skipTo);
-        const t = formatTime(skipTo);
+        const t = formatTime(Math.round(skipTo/this.fps));
         this.seekTooltip.textContent = `${t.minutes}:${t.seconds}`;
         const rect = this.video.getBoundingClientRect();
         this.seekTooltip.style.left = `${event.pageX - rect.left}px`;
@@ -145,9 +192,13 @@ const InputContainer = function(){
         const skipTo = event.target.dataset.seek
             ? event.target.dataset.seek
             : event.target.value;
-            this.video.currentTime = skipTo;
-            this.progressBar.value = skipTo;
-            this.seek.value = skipTo;
+        console.log(skipTo);
+        this.idPlaying = skipTo - 1;
+        this.progressBar.value = skipTo;
+        this.seek.value = skipTo;
+        // this.updateTimeElapsed();
+        this.hiddenVideo.currentTime = skipTo/this.fps;
+        this.videoControls.dispatchEvent(this.timeUpdateEvent);
     }
 
     // updateVolume updates the video's volume
@@ -303,13 +354,13 @@ const InputContainer = function(){
 
     // Add eventlisteners here
     this.playButton.addEventListener('click', this.fcTogglePlay.bind(this));
-    this.video.addEventListener('play', this.fcUpdatePlayButton.bind(this));
-    this.video.addEventListener('pause', this.fcUpdatePlayButton.bind(this));
-    this.video.addEventListener('loadedmetadata', this.fcInitializeVideo.bind(this));
-    this.video.addEventListener('timeupdate', this.fcUpdateTimeElapsed.bind(this));
-    this.video.addEventListener('timeupdate', this.fcUpdateProgress.bind(this));
-    this.video.addEventListener('timeupdate', this.fcStoreFrame.bind(this));
-    this.video.addEventListener('volumechange', this.fcUpdateVolumeIcon.bind(this));
+    // this.video.addEventListener('play', this.fcUpdatePlayButton.bind(this));
+    // this.video.addEventListener('pause', this.fcUpdatePlayButton.bind(this));
+    // this.video.addEventListener('loadedmetadata', this.fcInitializeVideo.bind(this));
+    this.videoControls.addEventListener('timeupdate', this.fcUpdateTimeElapsed.bind(this));
+    this.videoControls.addEventListener('timeupdate', this.fcUpdateProgress.bind(this));
+    // this.video.addEventListener('timeupdate', this.fcStoreFrame.bind(this));
+    // this.video.addEventListener('volumechange', this.fcUpdateVolumeIcon.bind(this));
     this.video.addEventListener('click', this.fcTogglePlay.bind(this));
     this.video.addEventListener('click', this.fcAnimatePlayback.bind(this));
     this.video.addEventListener('mouseenter', this.fcShowControls.bind(this));

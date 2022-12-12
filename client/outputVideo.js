@@ -78,8 +78,6 @@ const OutputContainer = function(fps, idContainer){
             }
             else{
                 tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
-                // this.renderCanvas.putImageData(this.listImage[this.idPlaying], 0, 0);
-                // console.log(Array.from(this.listImage[0].data));
                 this.videoControls.dispatchEvent(this.timeUpdateEvent);
             }
         }, 1000/this.fps);
@@ -88,7 +86,10 @@ const OutputContainer = function(fps, idContainer){
     function pause(){
         this.isPlaying = false;
         this.isPaused = true;
-        clearInterval(this.renderInterval);
+        try{
+            clearInterval(this.renderInterval);
+        }
+        catch{}        
         this.fcShowControls();
     }
 
@@ -200,7 +201,6 @@ const OutputContainer = function(fps, idContainer){
         this.seek.value = skipTo;
         // this.updateTimeElapsed();
         tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
-        // this.renderCanvas.putImageData(this.listImage[this.idPlaying], 0, 0);
         this.videoControls.dispatchEvent(this.timeUpdateEvent);
     }
 
