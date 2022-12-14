@@ -18,7 +18,7 @@ var result;
 function BufferFrame(){
     this.image = undefined;
     this.isSelected = false;
-    this.idCookie = 0;
+    this.time = 0;
 }
 
 function Buffer(length, idMaxPoint, savedFrames){
@@ -47,7 +47,7 @@ function Buffer(length, idMaxPoint, savedFrames){
             this.idPoint -= 1;
 
             if (expiredFrame.isSelected === true){
-                savedFrames.push(expiredFrame.idCookie);
+                savedFrames.push(expiredFrame.time);
             }
             expiredFrame.image.dispose();
             delete expiredFrame;
@@ -82,12 +82,12 @@ function Buffer(length, idMaxPoint, savedFrames){
     }
 
     this.countCookie = 0;
-    this.CookieFrame = function(image){
+    this.CookieFrame = function(image, time){
         this.countCookie += 1;
         console.log('Count cookie: ' + this.countCookie);
         var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
-        this.listFrames[this.idPoint].idCookie = this.countCookie - 1;
+        this.listFrames[this.idPoint].time = time;
         this.idPoint += 1;
 
         if (this.idNextProccessed <= this.idPoint - 1){

@@ -1,9 +1,10 @@
 
 // inputVideoModule = require('./inputVideo.js')
 // console.log(inputVideoModule.blobing)
-const OutputContainer = function(fps, idContainer, hiddenVideo){
+const OutputContainer = function(fps, idContainer){
     this.outputVideoContainer = document.getElementById(idContainer);
     this.video = this.outputVideoContainer.querySelector('#video');
+    this.hiddenVideo = this.outputVideoContainer.querySelector('#hidden-video');
     this.videoControls = this.outputVideoContainer.querySelector('#video-controls');
     this.playButton = this.outputVideoContainer.querySelector('#play');
     this.playbackIcons = this.outputVideoContainer.querySelectorAll('.playback-icons use');
@@ -32,7 +33,6 @@ const OutputContainer = function(fps, idContainer, hiddenVideo){
     this.isStopped = false;
     this.fps = fps;
     this.renderInterval;
-    this.hiddenVideo = hiddenVideo;
 
     this.fcTogglePlay = togglePlay;
     this.fcUpdatePlayButton = updatePlayButton;
@@ -64,6 +64,11 @@ const OutputContainer = function(fps, idContainer, hiddenVideo){
 
 
 
+    this.initializeSize = () => {
+        this.video.width = this.hiddenVideo.videoWidth;
+        this.video.height = this.hiddenVideo.videoHeight;
+    }
+    
     async function play(){
         this.isPlaying = true;
         this.isPaused = false;
@@ -77,7 +82,7 @@ const OutputContainer = function(fps, idContainer, hiddenVideo){
                 this.fcTogglePlay();
             }
             else{
-                this.displaySrcTime((this.listImage[this.idPlaying]+1)/this.fps);
+                this.displaySrcTime(this.listImage[this.idPlaying]);
             }
         }, 1000/this.fps);
         // this.hiddenVideo.play();
@@ -196,14 +201,16 @@ const OutputContainer = function(fps, idContainer, hiddenVideo){
         this.hiddenVideo.currentTime = time;
         // await this.hiddenVideo.play();
         // await this.hiddenVideo.pause();
-        this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
-        this.videoControls.dispatchEvent(this.timeUpdateEvent);
-        // setTimeout(()=>{
-            
-        // }, 10)
+        
+        setTimeout(()=>{
+            this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
+            this.videoControls.dispatchEvent(this.timeUpdateEvent);
+        }, 0);
+        // window.requestAnimationFrame(this.displaySrcTime);
         // console.log(this.hiddenVideo.currentTime);
         
     }
+    // window.requestAnimationFrame(this.displaySrcTime);
 
     function skipAhead(event) {
         const skipTo = event.target.dataset.seek
@@ -214,7 +221,7 @@ const OutputContainer = function(fps, idContainer, hiddenVideo){
         // this.progressBar.value = skipTo;
         // this.seek.value = skipTo;
         // this.updateTimeElapsed();
-        this.displaySrcTime((this.listImage[this.idPlaying]+1)/this.fps);
+        this.displaySrcTime(this.listImage[this.idPlaying]);
         console.log(this.hiddenVideo.currentTime);
     }
 

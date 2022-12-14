@@ -1,7 +1,8 @@
 // Select elements here
-const InputContainer = function(fps, idContainer, hiddenVideo){
+const InputContainer = function(fps, idContainer){
     this.inputVideoContainer = document.getElementById(idContainer);
     this.video = this.inputVideoContainer.querySelector('#video');
+    this.hiddenVideo = this.inputVideoContainer.querySelector('#hidden-video');
     this.videoControls = this.inputVideoContainer.querySelector('#video-controls');
     this.playButton = this.inputVideoContainer.querySelector('#play');
     this.playbackIcons = this.inputVideoContainer.querySelectorAll('.playback-icons use');
@@ -29,7 +30,6 @@ const InputContainer = function(fps, idContainer, hiddenVideo){
     this.isStopped = false;
     this.fps = fps;
     this.renderInterval;
-    this.hiddenVideo = hiddenVideo;
 
     this.fcTogglePlay = togglePlay;
     this.fcUpdatePlayButton = updatePlayButton;
@@ -60,6 +60,10 @@ const InputContainer = function(fps, idContainer, hiddenVideo){
     this.timeUpdateEvent = new Event('timeupdate');
 
 
+    this.initializeSize = () => {
+        this.video.width = this.hiddenVideo.videoWidth;
+        this.video.height = this.hiddenVideo.videoHeight;
+    }
 
     function play(){
         this.isPlaying = true;

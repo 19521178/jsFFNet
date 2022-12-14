@@ -28,10 +28,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
   }
   
   .video-container {
-    width: 800px;
+    /* width: 800px; */
+    width:100%;
+    height:100%;
     border-radius: 4px;
     margin: 0 auto;
     position: relative;
@@ -296,3 +299,75 @@
     stroke: #fff;
     cursor: pointer;
   }
+
+  /* <!-- HTML !-->
+<button class="button-27" role="button">Button 27</button> */
+
+/* CSS */
+.button-27 {
+  appearance: none;
+  background-color: #000000;
+  border: 2px solid #1A1A1A;
+  border-radius: 15px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Roobert,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal;
+  margin: 0;
+  min-height: 60px;
+  min-width: 0;
+  outline: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: 100%;
+  will-change: transform;
+}
+
+.button-27:disabled {
+  pointer-events: none;
+}
+
+.button-27:hover {
+  box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+  transform: translateY(-2px);
+}
+
+.button-27:active {
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+.parent {
+  display: flex;
+  justify-content: space-around;
+}
+.children-1 {
+  width: 45%;
+  display: inline-block;
+  /* position: relative; */
+}
+.children-2 {
+  overflow-y: hidden;
+  /* max-height: 200px;  */
+}
+
+/* canvas{
+
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+} */

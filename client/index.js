@@ -7,10 +7,8 @@ var fps = 30;
 
 var getImgDataTimes = [];
 
-const inputHiddenVideo = document.createElement('video');
-inputHiddenVideo.style.display = 'none';
-inputHiddenVideo.muted = true;
-const inputContainer = new InputContainer(fps, 'input-video-container', inputHiddenVideo);
+const inputContainer = new InputContainer(fps, 'input-video-container');
+inputContainer.hiddenVideo.muted = true;
 if (true) {
     // outputContainer.video.controls = false;
     inputContainer.videoControls.classList.remove('hidden');
@@ -20,17 +18,16 @@ if (true) {
 //     inputContainer.video.controls = false;
 //     inputContainer.videoControls.classList.remove('hidden');
 // }
-const outputHiddenVideo = document.createElement('video');
-outputHiddenVideo.style.display = 'none';
-outputHiddenVideo.muted = true;
-const outputContainer = new OutputContainer(fps, 'output-video-container', outputHiddenVideo);
+
+const outputContainer = new OutputContainer(fps, 'output-video-container');
+outputContainer.hiddenVideo.muted = true;
 // const videoWorks = !!document.createElement('video').canPlayType;
 if (true) {
     // outputContainer.video.controls = false;
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new Buffer(length=120, idMaxPoint=60, savedFrames=outputContainer.listImage);
+var buffer = new Buffer(length=240, idMaxPoint=120, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
@@ -38,7 +35,7 @@ var buffer = new Buffer(length=120, idMaxPoint=60, savedFrames=outputContainer.l
 // var idStartSegment = 0;
 
 // var cap;
-var captureCanvas;
+var captureCanvas = document.getElementById('capture-canvas');
 var captureCtx;
 // var convertURLCanvas;
 // var convertURLctx;
@@ -53,12 +50,14 @@ btnProcess.onclick = ()=>{
         frameCapture = setInterval(async () => {     
             // await cap.read(srcMat);
             // await cv.imshow(captureCanvas, srcMat);
-            captureCtx.drawImage(hiddenVideo, 0, 0, VID_WIDTH, VID_HEIGHT);
+            let currTime = hiddenVideo.currentTime;
+            // captureCtx.drawImage(hiddenVideo, 0, 0, hiddenVideo.clientWidth, hiddenVideo.clientHeight);
+            captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
             gl = await tf.browser.fromPixels(captureCanvas);
             // inputContainer.listImage.push(gl);
             inputContainer.lenVideo += 1;
             inputContainer.fcUpdateVideoDuration();
-            buffer.CookieFrame(gl);
+            buffer.CookieFrame(gl, currTime);
             outputContainer.fcUpdateVideoDuration();
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
             //     let startTimeStore = Date.now();
@@ -75,17 +74,18 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Start';
         clearInterval(frameCapture);
         hiddenVideo.pause();
+        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+            buffer.Expired();
+        }
+        outputContainer.fcUpdateVideoDuration();
     }
 }
 
 
-const VID_WIDTH = 400;
-const VID_HEIGHT = 320;
+const VID_WIDTH = 1024;
+const VID_HEIGHT = 576;
 var hiddenVideo = document.getElementById("hidden-video");
 // var srcMat;
-hiddenVideo.height = VID_HEIGHT;
-hiddenVideo.width = VID_WIDTH;
-
 
 
 const inputTag = document.querySelector("#input-tag");
@@ -94,10 +94,10 @@ async function readVideo(event) {
         const file = event.target.files[0];
         var urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
-        inputHiddenVideo.src = urlBlob;
-        outputHiddenVideo.src = urlBlob;
-        await inputHiddenVideo.load();
-        await outputHiddenVideo.load();
+        inputContainer.hiddenVideo.src = urlBlob;
+        outputContainer.hiddenVideo.src = urlBlob;
+        await inputContainer.hiddenVideo.load();
+        await outputContainer.hiddenVideo.load();
         await hiddenVideo.load();
         // cap = new cv.VideoCapture(hiddenVideo);
     }
@@ -109,31 +109,26 @@ hiddenVideo.onloadedmetadata = () => {
     hiddenVideo.play();
     hiddenVideo.pause();
 
-    hiddenVideo.clientHeight = VID_HEIGHT;
-    hiddenVideo.clientWidth = VID_WIDTH;
+    // inputContainer.video.width = VID_WIDTH;
+    // inputContainer.video.height = VID_HEIGHT;
 
-    inputHiddenVideo.clientHeight = VID_HEIGHT;
-    inputHiddenVideo.clientWidth = VID_WIDTH;
-
-    outputHiddenVideo.clientHeight = VID_HEIGHT;
-    outputHiddenVideo.clientWidth = VID_WIDTH;
-
-    inputContainer.video.width = VID_WIDTH;
-    inputContainer.video.height = VID_HEIGHT;
-
-    outputContainer.video.width = VID_WIDTH;
-    outputContainer.video.height = VID_HEIGHT;
+    // outputContainer.video.width = VID_WIDTH;
+    // outputContainer.video.height = VID_HEIGHT;
 
     // srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
-
-    captureCanvas = document.createElement('canvas');
-    captureCanvas.width = outputContainer.video.width;
-    captureCanvas.height = outputContainer.video.height;
+ 
+    // captureCanvas = document.createElement('canvas');
+    // captureCanvas.width = hiddenVideo.clientWidth;
+    // captureCanvas.height = hiddenVideo.clientHeight;
+    captureCanvas.width = hiddenVideo.videoWidth;
+    captureCanvas.height = hiddenVideo.videoHeight;
     captureCtx = captureCanvas.getContext('2d');
 
+    inputContainer.initializeSize();
+    outputContainer.initializeSize();
     
-    outputHiddenVideo.play();
-    // outputHiddenVideo.pause();
+    // outputContainer.hiddenVideo.play();
+    // outputContainer.hiddenVideo.pause();
 
 
     // storeCanvas = document.createElement('canvas');
