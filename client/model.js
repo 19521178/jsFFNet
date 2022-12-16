@@ -7,10 +7,12 @@ var pre_c = tf.zeros([1, 256], tf.float32);
 
 async function loadMobileNet(){
     try {
-        MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
-        //warm-up model
-        console.log(await MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
-        alert('MobileNet loaded successfully')
+
+            MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
+            //warm-up model
+            await console.log(MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
+            alert('Models loaded successfully');
+
     } catch (err) {
         console.log(err);
         console.log("failed load model");
@@ -18,10 +20,12 @@ async function loadMobileNet(){
 }
 async function loadLSTMNet(){
     try {
-        LSTMNET = await tf.loadGraphModel(MODEL_LSTM_URL);
-        //warm-up model
-        // LSTM has dynamic exit Exit_4 so need executeAsync
-        console.log(LSTMNET.executeAsync([pre_h, pre_c, tf.randomNormal([1, 960], tf.float32)]));
+
+            LSTMNET = await tf.loadGraphModel(MODEL_LSTM_URL);
+            //warm-up model
+            // LSTM has dynamic exit Exit_4 so need executeAsync
+            await console.log(LSTMNET.executeAsync([pre_h, pre_c, tf.randomNormal([1, 960], tf.float32)]));
+
     } catch (err) {
         console.log(err);
         console.log("failed load model");
@@ -37,29 +41,41 @@ const CROP_SIZE = 224;
 const START_CROP = (RESIZE_SIZE-CROP_SIZE)/2;
 function preprocess(img){
     // resize img, output: {uint8, shape=[resizeSize, resizeSize, 3]}
-    var resizeImg = tf.image.resizeBilinear(img, [RESIZE_SIZE, RESIZE_SIZE]);
+    var resizeImg = tf.tidy(()=>{
+        return tf.image.resizeBilinear(img, [RESIZE_SIZE, RESIZE_SIZE]);
+    });
+
     // cop img, output: {uint8, shape=[cropSize, cropSize, 3]}
-    var cropImg = resizeImg.slice(
-        [START_CROP, START_CROP, 0],
-        [CROP_SIZE, CROP_SIZE, 3]
-    );
+    var cropImg = tf.tidy(()=>{
+        return resizeImg.slice(
+            [START_CROP, START_CROP, 0],
+            [CROP_SIZE, CROP_SIZE, 3]
+        );
+    });
 
     // scale img to float32 (0, 1) then normalize by standard mean, dst of ImageNet
-    var normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
+    var normalImg = tf.tidy(()=>{
+        return cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
+    });
+
 
     // to shape [1, cropSize, cropSize, 3]
-    var output = normalImg.expandDims(0);
+    var output = tf.tidy(()=>{
+        return normalImg.expandDims(0);
+    });
 
     // release memory of not-used-anymore variable in this preprocess-func
     // var img still used for render tasks
-    normalImg.dispose();
-    cropImg.dispose();
-    resizeImg.dispose();
+    // normalImg.dispose();
+    // cropImg.dispose();
+    // resizeImg.dispose();
     return output;
 }
 
 function extract(inputTensor){
-    return MOBILENET.predict(inputTensor);
+    return tf.tidy(()=>{
+        return MOBILENET.predict(inputTensor);
+    });
 }
 
 function predict(feat, buffer){
@@ -106,11 +122,15 @@ function extendBothFormula(action){
 function handlerAction(probs, buffer){
     // probs shape [1, 25] so need squeeze to shape [25] in order to can argmax,
     // .dataSync()[0] to convert integer GPU to CPU
-    action = tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
+    var action = tf.tidy(()=>{
+        return tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
+    }) 
+
 
     // Define which neighbor will be selected, Ex: output [-4, -2, 0, 2, 4]
     const indicesNeighbor = extendBothFormula(action);
-
+    console.log(action, indicesNeighbor);
+    probs.dispose();
     // label to buffer
     buffer.LabelFrames(action, indicesNeighbor);
 }
