@@ -26,7 +26,8 @@
     <canvas id="capture-canvas" hidden></canvas>
     <input type="file" accept="video/*" id="input-tag"/>
     <hr>
-    <!-- <button data-title="Play (k)" id="play-process">
+
+    <!-- <button data-title="Play (k)" id="play-process" class="btn-play-pause">
         <svg class="playback-icons">
             <use href="#play-icon"></use>
             <use href="#pause" class="hidden"></use>
@@ -36,12 +37,12 @@
         <button id="play-process" type="button" class="button-27" role="button" name="Process Button">
             Start
         </button>
-    </div>
+    </div>  
     
     <hr>
 
-    <div class="parent">
-        <div class="children-1">
+    <div class="parent-inline">
+        <div class="children-inline">
             <div class="container">
                 <div class="video-container" id="input-video-container">
                     <div class="playback-animation" id="playback-animation">
@@ -108,7 +109,7 @@
             </div>
         </div>
 
-        <div class="children-1">
+        <div class="children-inline">
             <div class="container">
                 <div class="video-container" id="output-video-container">
                     <div class="playback-animation" id="playback-animation">
@@ -220,6 +221,8 @@
         </defs>
     </svg>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+    <!-- <script  src="https://unpkg.com/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script> -->
+    <!-- <script  src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script> -->
     <!-- <script async src="./opencv.js" onload="onOpenCvReady();" type="text/javascript"></script> -->
     <!-- <script src="./opencv.js" type="text/javascript"></script> -->
     <!-- <script src="./client/utils/whammy/whammy.js"></script> -->

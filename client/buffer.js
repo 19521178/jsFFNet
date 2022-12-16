@@ -64,9 +64,6 @@ function Buffer(length, idMaxPoint, savedFrames){
         this.countLabel+=1;
         var start_label_time = Date.now();
         this.idNextProccessed = this.idLastProccessed + action;
-        // // 2 lines below may not be used
-        // this.listFrames[this.idNextProccessed].isProccessed = true;
-        // this.listFrames[this.idNextProccessed].isSelected = true;
 
         for(let idNeighbor of indicesNeighbor){
             try{
@@ -95,7 +92,6 @@ function Buffer(length, idMaxPoint, savedFrames){
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
             var start_upserver_time = Date.now();
-            // UpserverFrame(this.listFrames[this.idLastProccessed].image, this);
             predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)
             var end_upserver_time = Date.now();
             upserverTimes.push(end_upserver_time - start_upserver_time);

@@ -1,7 +1,3 @@
-// import Whammy from ./client/
-// import * as tf from '@tensorflow/tfjs'
-
-
 
 var fps = 30;
 
@@ -34,13 +30,60 @@ var buffer = new Buffer(length=240, idMaxPoint=120, savedFrames=outputContainer.
 // var isFirstSegment = true;
 // var idStartSegment = 0;
 
-// var cap;
 var captureCanvas = document.getElementById('capture-canvas');
 var captureCtx;
-// var convertURLCanvas;
-// var convertURLctx;
 // var storeCanvas;
 // var storeCtx;
+
+// const { createFFmpeg, fetchFile } = FFmpeg; //error happens here
+// const ffmpegInstance = createFFmpeg({
+//     corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+//     log: true,
+// });
+
+
+var hiddenVideo = document.getElementById("hidden-video");
+
+const inputTag = document.querySelector("#input-tag");
+async function readVideo(event) {
+    if (event.target.files && event.target.files[0]) {
+        const file = event.target.files[0];
+        var urlBlob = URL.createObjectURL(file);
+        hiddenVideo.src = urlBlob;
+        inputContainer.hiddenVideo.src = urlBlob;
+        outputContainer.hiddenVideo.src = urlBlob;
+        await inputContainer.hiddenVideo.load();
+        await outputContainer.hiddenVideo.load();
+        await hiddenVideo.load();
+    }
+};
+inputTag.onchange = readVideo;
+
+
+hiddenVideo.onloadedmetadata = () => {
+    // alert("Video on load");
+    hiddenVideo.play();
+    hiddenVideo.pause();
+
+    captureCanvas.width = hiddenVideo.videoWidth;
+    captureCanvas.height = hiddenVideo.videoHeight;
+    captureCtx = captureCanvas.getContext('2d');
+
+    inputContainer.initializeSize();
+    outputContainer.initializeSize();
+    
+    // outputContainer.hiddenVideo.play();
+    // outputContainer.hiddenVideo.pause();
+
+
+    // storeCanvas = document.createElement('canvas');
+    // storeCanvas.width = outputContainer.video.width;
+    // storeCanvas.height = outputContainer.video.height;
+    // storeCtx = storeCanvas.getContext('2d', { willReadFrequently: true });
+
+    
+    
+};
 
 var btnProcess = document.getElementById('play-process');
 var frameCapture;
@@ -48,10 +91,7 @@ btnProcess.onclick = ()=>{
     if (btnProcess.textContent === 'Start'){
         btnProcess.textContent = 'Pause';
         frameCapture = setInterval(async () => {     
-            // await cap.read(srcMat);
-            // await cv.imshow(captureCanvas, srcMat);
             let currTime = hiddenVideo.currentTime;
-            // captureCtx.drawImage(hiddenVideo, 0, 0, hiddenVideo.clientWidth, hiddenVideo.clientHeight);
             captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
             gl = await tf.browser.fromPixels(captureCanvas);
             // inputContainer.listImage.push(gl);
@@ -74,71 +114,14 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Start';
         clearInterval(frameCapture);
         hiddenVideo.pause();
-        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
-            buffer.Expired();
-        }
-        outputContainer.fcUpdateVideoDuration();
+        // while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+        //     buffer.Expired();
+        // }
+        // outputContainer.fcUpdateVideoDuration();
     }
 }
 
 
-const VID_WIDTH = 1024;
-const VID_HEIGHT = 576;
-var hiddenVideo = document.getElementById("hidden-video");
-// var srcMat;
-
-
-const inputTag = document.querySelector("#input-tag");
-async function readVideo(event) {
-    if (event.target.files && event.target.files[0]) {
-        const file = event.target.files[0];
-        var urlBlob = URL.createObjectURL(file);
-        hiddenVideo.src = urlBlob;
-        inputContainer.hiddenVideo.src = urlBlob;
-        outputContainer.hiddenVideo.src = urlBlob;
-        await inputContainer.hiddenVideo.load();
-        await outputContainer.hiddenVideo.load();
-        await hiddenVideo.load();
-        // cap = new cv.VideoCapture(hiddenVideo);
-    }
-};
-inputTag.onchange = readVideo;
-
-hiddenVideo.onloadedmetadata = () => {
-    // alert("Video on load");
-    hiddenVideo.play();
-    hiddenVideo.pause();
-
-    // inputContainer.video.width = VID_WIDTH;
-    // inputContainer.video.height = VID_HEIGHT;
-
-    // outputContainer.video.width = VID_WIDTH;
-    // outputContainer.video.height = VID_HEIGHT;
-
-    // srcMat  = new cv.Mat(VID_HEIGHT, VID_WIDTH, cv.CV_8UC4);
- 
-    // captureCanvas = document.createElement('canvas');
-    // captureCanvas.width = hiddenVideo.clientWidth;
-    // captureCanvas.height = hiddenVideo.clientHeight;
-    captureCanvas.width = hiddenVideo.videoWidth;
-    captureCanvas.height = hiddenVideo.videoHeight;
-    captureCtx = captureCanvas.getContext('2d');
-
-    inputContainer.initializeSize();
-    outputContainer.initializeSize();
-    
-    // outputContainer.hiddenVideo.play();
-    // outputContainer.hiddenVideo.pause();
-
-
-    // storeCanvas = document.createElement('canvas');
-    // storeCanvas.width = outputContainer.video.width;
-    // storeCanvas.height = outputContainer.video.height;
-    // storeCtx = storeCanvas.getContext('2d', { willReadFrequently: true });
-
-    
-    
-};
 
 
 
