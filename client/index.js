@@ -121,10 +121,10 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Start';
         clearInterval(frameCapture);
         hiddenVideo.pause();
-        // while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
-        //     buffer.Expired();
-        // }
-        // outputContainer.fcUpdateVideoDuration();
+        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+            buffer.Expired();
+        }
+        outputContainer.fcUpdateVideoDuration();
     }
 }
 

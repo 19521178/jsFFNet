@@ -71,6 +71,13 @@
           if (callback) callback();
         };
       },
+    //   deleteAll: function(callback){
+    //     if (!db) {
+    //         setTimeout(function () { ldb.list(callback); }, 50);
+    //         return;
+    //     }
+
+    //   },
       list: function(callback) {
         if (!db) {
           setTimeout(function () { ldb.list(callback); }, 50);
