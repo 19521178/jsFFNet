@@ -231,6 +231,7 @@ const OutputContainer = function(fps, idContainer){
             : event.target.value;
         console.log(skipTo);
         this.idPlaying = skipTo - 1;
+        this.idPlaying = (this.idPlaying>=0) ? this.idPlaying : 0;
         // this.progressBar.value = skipTo;
         // this.seek.value = skipTo;
         // this.updateTimeElapsed();

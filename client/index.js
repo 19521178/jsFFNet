@@ -46,10 +46,11 @@ ldb.clear();
 
 var hiddenVideo = document.getElementById("hidden-video");
 
-const inputTag = document.querySelector("#input-tag");
-async function readVideo(event) {
-    if (event.target.files && event.target.files[0]) {
-        const file = event.target.files[0];
+var inputTag = document.querySelector("#input-tag");
+async function readVideo(files) {
+    if (files && files[0]) {
+        console.log('ON CHANGE');
+        const file = files[0];
         var urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
         inputContainer.hiddenVideo.src = urlBlob;
@@ -57,9 +58,19 @@ async function readVideo(event) {
         await inputContainer.hiddenVideo.load();
         // await outputContainer.hiddenVideo.load();
         await hiddenVideo.load();
+
+        inputTag = document.querySelector("#input-tag");
+        fileInput = inputTag;
+        inputTag.addEventListener('change', (e)=>{
+            onChangeInputTag(e);
+            readVideo(e.target.files);
+        });
+        inputTag.addEventListener('click', onClickInputTag());
     }
 };
-inputTag.onchange = readVideo;
+inputTag.addEventListener('change', (e)=>{
+    readVideo(e.target.files);
+});
 
 
 hiddenVideo.onloadedmetadata = async () => {
