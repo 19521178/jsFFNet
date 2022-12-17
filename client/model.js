@@ -76,7 +76,8 @@ function predict(feat, buffer){
 }
 
 var ppArgs = {
-    windowSize: 2,
+    minAction : 3,
+    windowSize: 0,
     stepSelect: 1,
     windowSizeSkip: 4,
     stepSelectSkip: 3,
@@ -92,12 +93,30 @@ function extendBothFormula(action){
     if (action>=ppArgs.threshold){  //if skip-action
         // if (ppArgs.windowSizeSkip>0){   
             // Ex: windowSizeSkip=3, stepSelectSkip=2 => [-6, -4, -2, 0, 2, 4, 6]
-            return range(-ppArgs.windowSizeSkip*ppArgs.stepSelectSkip, ppArgs.windowSizeSkip*ppArgs.stepSelectSkip+1, ppArgs.stepSelectSkip);
+            return range(
+                -ppArgs.windowSizeSkip*ppArgs.stepSelectSkip, 
+                ppArgs.windowSizeSkip*ppArgs.stepSelectSkip+1, 
+                ppArgs.stepSelectSkip
+            );
         // }
     }
     else{   //if focus-action
-        return range(-ppArgs.windowSize, ppArgs.windowSize+1, 1)    // Ex: windowSize=3 => [-3, -2, -1, 0, 1, 2, 3]
-    }
+        let actionNeighbors = range(-ppArgs.windowSize, ppArgs.windowSize, ppArgs.stepSelect);
+        if (action <= ppArgs.minAction){  //if action<=minaction expend more neighbor of first element
+            let resultSet = new Set(actionNeighbors);
+            for (let midAction = -ppArgs.minAction+1; midAction<0; midAction++){
+                for (let idNeighbor = midAction - ppArgs.windowSize * ppArgs.stepSelect;
+                    idNeighbor <= midAction + ppArgs.windowSize * ppArgs.stepSelect;
+                    idNeighbor+=ppArgs.stepSelect){
+                    resultSet.add(idNeighbor);
+                }
+            }
+            return Array.from(resultSet);
+        }
+        else{
+            return actionNeighbors;
+        }
+    } 
 }
 
 function handlerAction(probs, buffer){
@@ -106,7 +125,7 @@ function handlerAction(probs, buffer){
     var action = tf.tidy(()=>{
         return tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
     }) 
-    action = (action<=ppArgs.windowSize)?(ppArgs.windowSize+1):action;
+    action = (action<ppArgs.minAction)?(ppArgs.minAction):action;
     // actions.push(action);
 
     // Define which neighbor will be selected, Ex: output [-4, -2, 0, 2, 4]
