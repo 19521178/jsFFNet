@@ -5,6 +5,14 @@ var labelTimes = [];
 var expireTimes = [];
 var result;
 
+// function download(url, filename) {
+//     var link = document.createElement('a');
+//     link.download =  filename + '.jpg';
+//     link.href = url
+//     link.click();
+//     // link.remove();
+// }
+
 
 
 // function ModelResponseHandler(response, buffer){
@@ -33,6 +41,7 @@ function Buffer(length, idMaxPoint, savedFrames){
     this.idNextProccessed = 0;
 
     this.countExpired = 0;
+    this.idStore = -1;
     this.Expired = function(){
         console.log("Start Expire")
         var start_expire_time = Date.now();
@@ -47,10 +56,25 @@ function Buffer(length, idMaxPoint, savedFrames){
             this.idPoint -= 1;
 
             if (expiredFrame.isSelected === true){
-                savedFrames.push(expiredFrame.time);
+                this.idStore += 1;
+                console.log('Up image'+this.idStore);
+                let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
+                savedFrames.push(nameImg);
+                tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+                ldb.set(
+                    nameImg, 
+                    localStoreCanvas.toDataURL('image/jpeg', quality=0.2)
+                );
+                // download(localStoreCanvas.toDataURL('image/jpeg', quality=0.1), nameImg);
+                
+                expiredFrame.image.dispose();
             }
-            expiredFrame.image.dispose();
+            else{
+                expiredFrame.image.dispose();
+            }
+            
             delete expiredFrame;
+            
         // }
         var end_expire_time = Date.now();
         expireTimes.push(end_expire_time-start_expire_time);
@@ -65,26 +89,31 @@ function Buffer(length, idMaxPoint, savedFrames){
         var start_label_time = Date.now();
         this.idNextProccessed = this.idLastProccessed + action;
 
-        for(let idNeighbor of indicesNeighbor){
-            try{
-                this.listFrames[this.idNextProccessed + idNeighbor].isSelected = true;
+        try {
+            for(let idNeighbor of indicesNeighbor){
+                try{
+                    this.listFrames[this.idNextProccessed + idNeighbor].isSelected = true;
+                }
+                catch{
+                    console.log('miss pp', this.idNextProccessed + idNeighbor);
+                }
             }
-            catch{
-                console.log('miss pp', this.idNextProccessed + idNeighbor);
-            }
+        } catch (error) {
+            console.log('ERROR INDICES NEIGHBOR:', indicesNeighbor, this.countLabel);
         }
+        
         var end_label_time = Date.now();
         labelTimes.push(end_label_time-start_label_time);
         console.log(this.idLastProccessed, this.idNextProccessed);
     }
 
     this.countCookie = 0;
-    this.CookieFrame = function(image, time){
+    this.CookieFrame = function(image){
         this.countCookie += 1;
         console.log('Count cookie: ' + this.countCookie);
         var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
-        this.listFrames[this.idPoint].time = time;
+        // this.listFrames[this.idPoint].time = time;
         this.idPoint += 1;
 
         if (this.idNextProccessed <= this.idPoint - 1){
@@ -92,6 +121,7 @@ function Buffer(length, idMaxPoint, savedFrames){
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
             var start_upserver_time = Date.now();
+            
             predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)
             var end_upserver_time = Date.now();
             upserverTimes.push(end_upserver_time - start_upserver_time);

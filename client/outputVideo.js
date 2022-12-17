@@ -4,7 +4,7 @@
 const OutputContainer = function(fps, idContainer){
     this.outputVideoContainer = document.getElementById(idContainer);
     this.video = this.outputVideoContainer.querySelector('#video');
-    this.hiddenVideo = this.outputVideoContainer.querySelector('#hidden-video');
+    // this.hiddenVideo = this.outputVideoContainer.querySelector('#hidden-video');
     this.videoControls = this.outputVideoContainer.querySelector('#video-controls');
     this.playButton = this.outputVideoContainer.querySelector('#play');
     this.playbackIcons = this.outputVideoContainer.querySelectorAll('.playback-icons use');
@@ -24,6 +24,7 @@ const OutputContainer = function(fps, idContainer){
     this.fullscreenIcons = this.fullscreenButton.querySelectorAll('use');
     this.pipButton = this.outputVideoContainer.querySelector('#pip-button');
 
+    this.localStoreImg = new Image();
     this.videoCtx = this.video.getContext('2d', { willReadFrequently: true });
     this.idPlaying = 0;
     this.lenVideo = 0;
@@ -62,8 +63,6 @@ const OutputContainer = function(fps, idContainer){
 
     this.timeUpdateEvent = new Event('timeupdate');
 
-
-
     this.initializeSize = () => {
         this.video.width = this.hiddenVideo.videoWidth;
         this.video.height = this.hiddenVideo.videoHeight;
@@ -82,7 +81,13 @@ const OutputContainer = function(fps, idContainer){
                 this.fcTogglePlay();
             }
             else{
-                this.displaySrcTime(this.listImage[this.idPlaying]);
+                // this.displaySrcTime(this.listImage[this.idPlaying]);
+
+                // tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
+                // this.videoControls.dispatchEvent(this.timeUpdateEvent);
+
+                this.displaySrcTime();               
+
             }
         }, 1000/this.fps);
         // this.hiddenVideo.play();
@@ -197,20 +202,28 @@ const OutputContainer = function(fps, idContainer){
 
     // skipAhead jumps to a different point in the video when the progress bar
     // is clicked
-    this.displaySrcTime = async (time)=>{
-        this.hiddenVideo.currentTime = time;
-        // await this.hiddenVideo.play();
-        // await this.hiddenVideo.pause();
+    // this.displaySrcTime = async (time)=>{
+    //     this.hiddenVideo.currentTime = time;
+    //     // await this.hiddenVideo.play();
+    //     // await this.hiddenVideo.pause();
         
-        setTimeout(()=>{
-            this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
+    //     setTimeout(()=>{
+    //         this.videoCtx.drawImage(this.hiddenVideo, 0, 0, this.video.width, this.video.height);
+    //         this.videoControls.dispatchEvent(this.timeUpdateEvent);
+    //     }, 0);
+    //     // window.requestAnimationFrame(this.displaySrcTime);
+    //     // console.log(this.hiddenVideo.currentTime);
+        
+    // }
+    // // window.requestAnimationFrame(this.displaySrcTime);
+
+    this.displaySrcTime = async ()=>{
+        ldb.get(this.listImage[this.idPlaying], (value)=>{
+            this.localStoreImg.src = value;
+            this.videoCtx.drawImage(this.localStoreImg, 0, 0);
             this.videoControls.dispatchEvent(this.timeUpdateEvent);
-        }, 0);
-        // window.requestAnimationFrame(this.displaySrcTime);
-        // console.log(this.hiddenVideo.currentTime);
-        
+        });               
     }
-    // window.requestAnimationFrame(this.displaySrcTime);
 
     function skipAhead(event) {
         const skipTo = event.target.dataset.seek
@@ -221,8 +234,14 @@ const OutputContainer = function(fps, idContainer){
         // this.progressBar.value = skipTo;
         // this.seek.value = skipTo;
         // this.updateTimeElapsed();
-        this.displaySrcTime(this.listImage[this.idPlaying]);
-        console.log(this.hiddenVideo.currentTime);
+        // this.displaySrcTime(this.listImage[this.idPlaying]);
+
+        // tf.browser.toPixels(this.listImage[this.idPlaying], this.video);
+        // this.videoControls.dispatchEvent(this.timeUpdateEvent);
+
+        this.displaySrcTime();
+
+        // console.log(this.hiddenVideo.currentTime);
     }
 
     // updateVolume updates the video's volume
@@ -377,6 +396,9 @@ const OutputContainer = function(fps, idContainer){
     }
 
     // Add eventlisteners here
+    this.localStoreImg.addEventListener('load', ()=>{
+        this.videoCtx.drawImage(this.localStoreImg, 0, 0);
+    })
     this.playButton.addEventListener('click', this.fcTogglePlay.bind(this));
     // this.video.addEventListener('play', this.fcUpdatePlayButton.bind(this));
     // this.video.addEventListener('pause', this.fcUpdatePlayButton.bind(this));
