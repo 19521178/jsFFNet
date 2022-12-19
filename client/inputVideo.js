@@ -25,6 +25,7 @@ const InputContainer = function(fps, idContainer){
     this.videoCtx = this.video.getContext('2d');
     this.idPlaying = 0;
     this.lenVideo = 0;
+    this.numFrames = 0;
     this.isPlaying = false;
     this.isPaused = true;
     this.isStopped = false;

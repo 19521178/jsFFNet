@@ -108,6 +108,15 @@ hiddenVideo.onloadedmetadata = async () => {
     
 };
 
+hiddenVideo.addEventListener('ended', ()=>{
+    btnProcess.click();
+    btnProcess.disabled = true;
+    while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+        buffer.Expired();
+    }
+    outputContainer.fcUpdateVideoDuration();
+})
+
 var btnProcess = document.getElementById('play-process');
 var frameCapture;
 btnProcess.onclick = ()=>{
@@ -115,7 +124,8 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Pause';
         frameCapture = setInterval(async () => {     
             // let currTime = hiddenVideo.currentTime;
-            inputContainer.lenVideo += 1;
+            inputContainer.numFrames += 1;
+            inputContainer.lenVideo = Math.floor(hiddenVideo.currentTime * fps);
             inputContainer.fcUpdateVideoDuration();
             captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
             gl = await tf.browser.fromPixels(captureCanvas);
