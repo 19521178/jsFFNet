@@ -118,6 +118,7 @@ hiddenVideo.addEventListener('ended', ()=>{
 })
 
 var btnProcess = document.getElementById('play-process');
+btnProcess.textContent = 'Start';
 var frameCapture;
 btnProcess.onclick = ()=>{
     if (btnProcess.textContent === 'Start'){
