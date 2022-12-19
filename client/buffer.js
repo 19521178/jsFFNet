@@ -38,7 +38,7 @@ function Buffer(length, idMaxPoint, savedFrames){
     this.Expired = function(){
         console.log("Start Expire")
         var start_expire_time = Date.now();
-        if (this.idLastProccessed >= 0){
+        if (this.idLastProccessed > 0){
             this.countExpired+=1;
             // Pop first element and push new init element to tail
             let expiredFrame = this.listFrames.shift();
