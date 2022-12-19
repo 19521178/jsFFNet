@@ -44,8 +44,6 @@ function onChangeInputTag(e){
 }
 fileInput.addEventListener("click", () => {
 	onClickInputTag();
-	console.log('fileinput clicked');
-	// console.log(fileInput.value);
 });
 
 fileInput.addEventListener("change", (e) => {
@@ -55,6 +53,7 @@ fileInput.addEventListener("change", (e) => {
 uploadButton.addEventListener("click", () => {
 	mainDiv.style.display = "block";
 	uploadDiv.style.display = "none";
+	
 });
 
 cancelAlertButton.addEventListener("click", () => {
@@ -96,10 +95,7 @@ if (isAdvancedUpload) {
 
 		let files = e.dataTransfer.files;
 		fileInput.files = files;
-		console.log('drop');
 		readVideo(files);
-		console.log(files[0].name + " " + files[0].size);
-		console.log(document.querySelector(".default-file-input").value);
 		fileName.innerHTML = files[0].name;
 		fileSize.innerHTML = (files[0].size / 1024).toFixed(1) + " KB";
 		uploadedFile.style.cssText = "display: flex;";

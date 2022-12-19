@@ -36,14 +36,24 @@ tf.ready().then(loadMobileNet()).then(loadLSTMNet());
 const RESIZE_SIZE = 256;
 const CROP_SIZE = 224;
 const START_CROP = (RESIZE_SIZE-CROP_SIZE)/2;
+const IS_ALIGN_CORNERS = false;
+const IS_HALF_PIXEL_CENTERS = true;
 // const END_CROP = START_CROP + CROP_SIZE;
 function preprocess(img){
-    var resizeImg = tf.image.resizeBilinear(img, [RESIZE_SIZE, RESIZE_SIZE]);
+    let biggerDim = (img.shape[0]>img.shape[1]) ? 0 : 1;
+    let biggerDimScale = img.shape[biggerDim] / img.shape[1 - biggerDim]
+
+    let resizeShape = [img.shape[0], img.shape[1]];
+    resizeShape[biggerDim] = Math.floor(biggerDimScale * RESIZE_SIZE);
+    resizeShape[1-biggerDim] = RESIZE_SIZE;
+    var resizeImg = tf.image.resizeBilinear(img, resizeShape, IS_ALIGN_CORNERS, IS_HALF_PIXEL_CENTERS);
+
     // slice and resize the image
-    var cropImg = resizeImg.slice(
-        [START_CROP, START_CROP, 0],
-        [CROP_SIZE, CROP_SIZE, 3]
-    );
+    let cropStart = [START_CROP, START_CROP, 0];
+    let cropSize = [CROP_SIZE, CROP_SIZE, 3];
+    cropStart[biggerDim] = Math.floor((resizeShape[biggerDim] - CROP_SIZE)/2);
+    
+    var cropImg = resizeImg.slice(cropStart, cropSize);
 
     var normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
 
@@ -79,9 +89,9 @@ var ppArgs = {
     minAction : 3,
     windowSize: 0,
     stepSelect: 1,
-    windowSizeSkip: 4,
+    windowSizeSkip: 2,
     stepSelectSkip: 3,
-    threshold: 15
+    threshold: 20
 }
 
 function range(start, end, step=1){
@@ -90,7 +100,7 @@ function range(start, end, step=1){
 }
 
 function extendBothFormula(action){
-    if (action>=ppArgs.threshold){  //if skip-action
+    if (action>ppArgs.threshold){  //if skip-action
         // if (ppArgs.windowSizeSkip>0){   
             // Ex: windowSizeSkip=3, stepSelectSkip=2 => [-6, -4, -2, 0, 2, 4, 6]
             return range(
@@ -126,7 +136,7 @@ function handlerAction(probs, buffer){
         return tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
     }) 
     action = (action<ppArgs.minAction)?(ppArgs.minAction):action;
-    // actions.push(action);
+    actions.push(action);
 
     // Define which neighbor will be selected, Ex: output [-4, -2, 0, 2, 4]
     const indicesNeighbor = extendBothFormula(action);

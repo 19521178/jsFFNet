@@ -23,7 +23,7 @@ if (true) {
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new Buffer(length=240, idMaxPoint=120, savedFrames=outputContainer.listImage);
+var buffer = new Buffer(length=240, idMaxPoint=180, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
@@ -55,9 +55,9 @@ async function readVideo(files) {
         hiddenVideo.src = urlBlob;
         inputContainer.hiddenVideo.src = urlBlob;
         // outputContainer.hiddenVideo.src = urlBlob;
+        await hiddenVideo.load();
         await inputContainer.hiddenVideo.load();
         // await outputContainer.hiddenVideo.load();
-        await hiddenVideo.load();
 
         inputTag = document.querySelector("#input-tag");
         fileInput = inputTag;
@@ -72,6 +72,13 @@ inputTag.addEventListener('change', (e)=>{
     readVideo(e.target.files);
 });
 
+inputContainer.hiddenVideo.addEventListener('loadedmetadata', async ()=>{
+    await inputContainer.hiddenVideo.play();
+    await inputContainer.hiddenVideo.pause();
+    inputContainer.initializeSize();
+    outputContainer.video.width = inputContainer.hiddenVideo.videoWidth;
+    outputContainer.video.height = inputContainer.hiddenVideo.videoHeight;
+});
 
 hiddenVideo.onloadedmetadata = async () => {
     // alert("Video on load");
@@ -85,9 +92,7 @@ hiddenVideo.onloadedmetadata = async () => {
     localStoreCanvas.width = hiddenVideo.videoWidth;
     localStoreCanvas.height = hiddenVideo.videoHeight;
 
-    inputContainer.initializeSize();
-    outputContainer.video.width = inputContainer.hiddenVideo.videoWidth;
-    outputContainer.video.height = inputContainer.hiddenVideo.videoHeight;
+    
     // outputContainer.initializeSize();
     
     // outputContainer.hiddenVideo.play();
@@ -110,13 +115,14 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Pause';
         frameCapture = setInterval(async () => {     
             // let currTime = hiddenVideo.currentTime;
+            inputContainer.lenVideo += 1;
+            inputContainer.fcUpdateVideoDuration();
             captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
             gl = await tf.browser.fromPixels(captureCanvas);
             // inputContainer.listImage.push(gl);
-            inputContainer.lenVideo += 1;
-            inputContainer.fcUpdateVideoDuration();
             buffer.CookieFrame(gl);
             outputContainer.fcUpdateVideoDuration();
+
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
             //     let startTimeStore = Date.now();
             //     storeOutput()
@@ -132,10 +138,10 @@ btnProcess.onclick = ()=>{
         btnProcess.textContent = 'Start';
         clearInterval(frameCapture);
         hiddenVideo.pause();
-        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
-            buffer.Expired();
-        }
-        outputContainer.fcUpdateVideoDuration();
+        // while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+        //     buffer.Expired();
+        // }
+        // outputContainer.fcUpdateVideoDuration();
     }
 }
 

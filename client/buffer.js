@@ -5,15 +5,6 @@ var labelTimes = [];
 var expireTimes = [];
 var result;
 
-// function download(url, filename) {
-//     var link = document.createElement('a');
-//     link.download =  filename + '.jpg';
-//     link.href = url
-//     link.click();
-//     // link.remove();
-// }
-
-
 
 // function ModelResponseHandler(response, buffer){
 //     // console.log(response);
@@ -63,9 +54,8 @@ function Buffer(length, idMaxPoint, savedFrames){
                 tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
                 ldb.set(
                     nameImg, 
-                    localStoreCanvas.toDataURL('image/jpeg', quality=0.2)
+                    localStoreCanvas.toDataURL('image/jpeg', quality=0.1)
                 );
-                // download(localStoreCanvas.toDataURL('image/jpeg', quality=0.1), nameImg);
                 
                 expiredFrame.image.dispose();
             }
