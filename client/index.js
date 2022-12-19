@@ -112,6 +112,7 @@ hiddenVideo.onloadedmetadata = async () => {
 hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.click();
     btnProcess.disabled = true;
+    btnProcess.textContent = 'The End';
     setTimeout(()=>{
         while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
             buffer.Expired();
