@@ -23,7 +23,7 @@ if (true) {
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new Buffer(length=240, idMaxPoint=180, savedFrames=outputContainer.listImage);
+var buffer = new Buffer(length=400, idMaxPoint=180, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
