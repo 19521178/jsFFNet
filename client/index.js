@@ -45,6 +45,7 @@ ldb.clear();
 
 
 var hiddenVideo = document.getElementById("hidden-video");
+hiddenVideo.muted = true;
 
 var inputTag = document.querySelector("#input-tag");
 async function readVideo(files) {
@@ -111,10 +112,14 @@ hiddenVideo.onloadedmetadata = async () => {
 hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.click();
     btnProcess.disabled = true;
-    while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
-        buffer.Expired();
-    }
-    outputContainer.fcUpdateVideoDuration();
+    setTimeout(()=>{
+        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+            buffer.Expired();
+        }
+        outputContainer.fcUpdateVideoDuration();
+    }, 100);
+    
+    
 })
 
 var btnProcess = document.getElementById('play-process');
