@@ -12,8 +12,6 @@ function BufferFrameElement(){
     this.time = 0;
 }
 
-// var localStoreWorker = new Worker('/workers/store-image-worker.js');
-
 function BufferFrame(length, idMaxPoint, savedFrames){
     this.savedFrames = savedFrames;
     this.listFrames = [];
@@ -31,15 +29,19 @@ function BufferFrame(length, idMaxPoint, savedFrames){
     this.tmpImg = null;
 
     function storeImg(expiredFrame, nameImg){
-        // let renderPromise = new Promise()
-        tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+        let renderPromise = new Promise(()=>{
+            const data = expiredFrame.image.dataToGPU({ customTexShape: [localStoreCanvas.width, localStoreCanvas.height] }); // get pointer to tensor texture on gpu
+            drawTexture(localStoreCanvas, data.texture); // draw texture on canvas
+            tf.dispose(data.tensorRef); // dispose tensor
 
-        localStoreCanvas.toBlob((blob) => {
-            ldb.set(
-                nameImg, 
-                blob,
-            );
-        }, 'image/jpeg', 0.1);
+            localStoreCanvas.toBlob((blob) => {
+                ldb.set(
+                    nameImg, 
+                    blob,
+                );
+            }, 'image/jpeg', 0.1);
+        })
+        
     }
 
     // this.numMissExpired = 0;
@@ -62,11 +64,6 @@ function BufferFrame(length, idMaxPoint, savedFrames){
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
                 savedFrames.push(nameImg);
                 storeImg(expiredFrame, nameImg);
-                // localStoreWorker.postMessage({
-                //     canvas: localStoreCanvas,
-                //     image: expiredFrame.image,
-                //     nameImg: nameImg
-                // });
 
                 // this.tmpImg = localStoreCanvas.toDataURL('image/jpeg', quality=0.1);
                 // ldb.set(
