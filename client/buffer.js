@@ -4,6 +4,7 @@
 // var labelTimes = [];
 // var expireTimes = [];
 // var result;
+var delayTimes = [];
 
 function BufferFrameElement(){
     this.image = undefined;
@@ -73,6 +74,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
             else{
                 expiredFrame.image.dispose();
             }
+            delayTimes.push(Date.now() - expiredFrame.time);
             
             delete expiredFrame;
             
@@ -115,6 +117,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
         // console.log('Count cookie: ' + this.countCookie);
         // var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
+        this.listFrames[this.idPoint].time = Date.now();
         // this.listFrames[this.idPoint].time = time;
         this.idPoint += 1;
         // var end_cookie_time = Date.now();
