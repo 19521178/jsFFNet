@@ -110,18 +110,30 @@ hiddenVideo.onloadedmetadata = async () => {
     
 };
 
+function saveOutput(){
+    var videoEncoder = new Whammy.Video(fps);
+    for (let nameImg of outputContainer.listImage){
+        ldb.get(this.listImage[this.idPlaying], (blob)=>{
+            let tmpURL = URL.createObjectURL(blob);
+            videoEncoder.add(tmpURL);
+            URL.revokeObjectURL(tmpURL);
+        });     
+    }
+    encoder.compile(false, function(output){});
+
+}
+
 hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.click();
     btnProcess.disabled = true;
-    btnProcess.textContent = 'The End';
+    btnProcess.textContent = 'Save Output';
+    btnProcess.onclick = saveOutput;
     setTimeout(()=>{
         while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
             buffer.Expired();
         }
         outputContainer.fcUpdateVideoDuration();
     }, 100);
-    
-    
 })
 
 var btnProcess = document.getElementById('play-process');
