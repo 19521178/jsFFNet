@@ -12,7 +12,7 @@ function BufferFrameElement(){
     this.time = 0;
 }
 
-var localStoreWorker = new Worker('/workers/store-image-worker.js');
+// var localStoreWorker = new Worker('/workers/store-image-worker.js');
 
 function BufferFrame(length, idMaxPoint, savedFrames){
     this.savedFrames = savedFrames;
@@ -61,12 +61,12 @@ function BufferFrame(length, idMaxPoint, savedFrames){
                 console.log('Up image'+this.idStore);
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
                 savedFrames.push(nameImg);
-                // storeImg(expiredFrame, nameImg);
-                localStoreWorker.postMessage({
-                    canvas: localStoreCanvas,
-                    image: expiredFrame.image,
-                    nameImg: nameImg
-                });
+                storeImg(expiredFrame, nameImg);
+                // localStoreWorker.postMessage({
+                //     canvas: localStoreCanvas,
+                //     image: expiredFrame.image,
+                //     nameImg: nameImg
+                // });
 
                 // this.tmpImg = localStoreCanvas.toDataURL('image/jpeg', quality=0.1);
                 // ldb.set(
