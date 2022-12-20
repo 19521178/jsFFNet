@@ -28,19 +28,20 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     this.tmpImg = null;
 
-    function storeImg(expiredFrame, nameImg){
-        let renderPromise = new Promise(()=>{
-            const data = expiredFrame.image.dataToGPU({ customTexShape: [localStoreCanvas.width, localStoreCanvas.height] }); // get pointer to tensor texture on gpu
-            drawTexture(localStoreCanvas, data.texture); // draw texture on canvas
-            tf.dispose(data.tensorRef); // dispose tensor
+    async function storeImg(expiredFrame, nameImg){
 
-            localStoreCanvas.toBlob((blob) => {
-                ldb.set(
-                    nameImg, 
-                    blob,
-                );
-            }, 'image/jpeg', 0.1);
-        })
+        // const data = expiredFrame.image.dataToGPU({ customTexShape: [localStoreCanvas.width, localStoreCanvas.height] }); // get pointer to tensor texture on gpu
+        
+        // await drawTexture(localStoreCanvas, data.texture); // draw texture on canvas
+        // tf.dispose(data.tensorRef); // dispose tensor
+        tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+
+        localStoreCanvas.toBlob((blob) => {
+            ldb.set(
+                nameImg, 
+                blob,
+            );
+        }, 'image/jpeg', 0.1);
         
     }
 

@@ -32,8 +32,8 @@ var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContai
 
 var captureCanvas = document.getElementById('capture-canvas');
 var captureCtx;
-var localStoreCanvas = document.createElement('canvas');
-// var localStoreCanvas = document.getElementById('local-store-canvas');
+// var localStoreCanvas = document.createElement('canvas');
+var localStoreCanvas = document.getElementById('local-store-canvas');
 ldb.clear();
 // var storeCanvas;
 // var storeCtx;
