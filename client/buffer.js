@@ -5,15 +5,6 @@
 // var expireTimes = [];
 // var result;
 
-
-// function ModelResponseHandler(response, buffer){
-//     // console.log(response);
-//     let action = response['action'];
-//     let indicesNeighbor = response['indices neighbor'];
-//     console.log(response)
-//     buffer.LabelFrames(action, indicesNeighbor);
-// }
-
 function BufferFrameElement(){
     this.image = undefined;
     this.isSelected = false;
@@ -96,8 +87,6 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     this.countLabel = 0;
     this.LabelFrames = function(action, indicesNeighbor){
-        // console.log(action);
-        // console.log("before: ", this.idLastProccessed, this.idNextProccessed);
         this.countLabel+=1;
         // var start_label_time = Date.now();
         this.idNextProccessed = this.idLastProccessed + action;
@@ -130,6 +119,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
         this.idPoint += 1;
         // var end_cookie_time = Date.now();
         // cookieTimes.push(end_cookie_time - start_cookie_time);
+    }
 
     this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
@@ -160,18 +150,5 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
         
         
-    }
+    
 }
-
-
-
-// var savedFrames = []
-
-
-// alert(Buffer)
-// console.log(typeof(Buffer))
-// console.log(Buffer)
-// totalCookieTimes = [];
-// for (let i = 0; i < cookieTimes.length; i++){
-//     totalCookieTimes.push(getImgDataTimes[i] + cookieTimes[i])
-// }

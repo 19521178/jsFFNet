@@ -72,6 +72,7 @@ async function readVideo(files) {
 inputTag.addEventListener('change', (e)=>{
     readVideo(e.target.files);
 });
+uploadButton.disabled = true;
 
 inputContainer.hiddenVideo.addEventListener('loadedmetadata', async ()=>{
     await inputContainer.hiddenVideo.play();
