@@ -114,19 +114,31 @@ hiddenVideo.onloadedmetadata = async () => {
 function saveOutput(){
     var videoEncoder = new Whammy.Video(fps);
     for (let nameImg of outputContainer.listImage){
-        ldb.get(this.listImage[this.idPlaying], (blob)=>{
+        ldb.get(nameImg, (blob)=>{
             let tmpURL = URL.createObjectURL(blob);
             videoEncoder.add(tmpURL);
             URL.revokeObjectURL(tmpURL);
         });     
     }
-    encoder.compile(false, function(output){});
+    encoder.compile(false, function(output){console.log(output);});
+}
 
+function analystOutput(){
+    console.log('num_cookie:', buffer.countCookie, '=> fps:', buffer.countCookie/hiddenVideo.currentTime);
+    sum = 0;
+    min = Infinity;
+    max = 0;
+    delayTimes.forEach(x=>{
+        sum += x;
+        min = Math.min(min, x);
+        max = Map.max(max, x);
+    })
+    console.log('DelayTimes:\tmean:', sum/delayTimes.length, '\tmin:', min, '\tmax:', max);
 }
 
 hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.click();
-    btnProcess.disabled = true;
+    // btnProcess.disabled = true;
     btnProcess.textContent = 'Save Output';
     btnProcess.onclick = saveOutput;
     setTimeout(()=>{
@@ -134,6 +146,7 @@ hiddenVideo.addEventListener('ended', ()=>{
             buffer.Expired();
         }
         outputContainer.fcUpdateVideoDuration();
+        analystOutput();
     }, 100);
 })
 
