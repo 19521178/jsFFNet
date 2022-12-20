@@ -1,9 +1,9 @@
 
-var cookieTimes = [];
-var upserverTimes = [];
-var labelTimes = [];
-var expireTimes = [];
-var result;
+// var cookieTimes = [];
+// var upserverTimes = [];
+// var labelTimes = [];
+// var expireTimes = [];
+// var result;
 
 
 // function ModelResponseHandler(response, buffer){
@@ -14,17 +14,17 @@ var result;
 //     buffer.LabelFrames(action, indicesNeighbor);
 // }
 
-function BufferFrame(){
+function BufferFrameElement(){
     this.image = undefined;
     this.isSelected = false;
     this.time = 0;
 }
 
-function Buffer(length, idMaxPoint, savedFrames){
+function BufferFrame(length, idMaxPoint, savedFrames){
     this.savedFrames = savedFrames;
     this.listFrames = [];
     for (let i=0; i<length; i++){
-        this.listFrames.push(new BufferFrame());
+        this.listFrames.push(new BufferFrameElement());
     }
     this.idPoint = 0;
     this.idMaxPoint = idMaxPoint;
@@ -34,15 +34,28 @@ function Buffer(length, idMaxPoint, savedFrames){
     this.countExpired = 0;
     this.idStore = -1;
 
+    this.tmpImg = null;
+
+    function storeImg(expiredFrame, nameImg){
+        tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+
+        localStoreCanvas.toBlob((blob) => {
+            ldb.set(
+                nameImg, 
+                blob,
+            );
+        }, 'image/jpeg', 0.1);
+    }
+
     // this.numMissExpired = 0;
     this.Expired = function(){
-        console.log("Start Expire")
-        var start_expire_time = Date.now();
+        // console.log("Start Expire")
+        // var start_expire_time = Date.now();
         // if (this.idLastProccessed > 0){
             this.countExpired+=1;
             // Pop first element and push new init element to tail
             let expiredFrame = this.listFrames.shift();
-            this.listFrames.push(new BufferFrame());
+            this.listFrames.push(new BufferFrameElement());
             
             this.idLastProccessed -= 1;
             this.idNextProccessed -= 1;
@@ -50,14 +63,19 @@ function Buffer(length, idMaxPoint, savedFrames){
 
             if (expiredFrame.isSelected === true){
                 this.idStore += 1;
-                console.log('Up image'+this.idStore);
+                // console.log('Up image'+this.idStore);
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
                 savedFrames.push(nameImg);
-                tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
-                ldb.set(
-                    nameImg, 
-                    localStoreCanvas.toDataURL('image/jpeg', quality=0.1)
-                );
+                storeImg(expiredFrame, nameImg);
+
+                // this.tmpImg = localStoreCanvas.toDataURL('image/jpeg', quality=0.1);
+                // ldb.set(
+                //     nameImg, 
+                //     this.tmpImg,
+                //     ()=>{
+                //         delete this.tmpImg;
+                //     }
+                // );
                 
                 expiredFrame.image.dispose();
             }
@@ -71,8 +89,8 @@ function Buffer(length, idMaxPoint, savedFrames){
         // else{
         //     this.numMissExpired += 1;
         // }
-        var end_expire_time = Date.now();
-        expireTimes.push(end_expire_time-start_expire_time);
+        // var end_expire_time = Date.now();
+        // expireTimes.push(end_expire_time-start_expire_time);
         
     }
 
@@ -81,7 +99,7 @@ function Buffer(length, idMaxPoint, savedFrames){
         // console.log(action);
         // console.log("before: ", this.idLastProccessed, this.idNextProccessed);
         this.countLabel+=1;
-        var start_label_time = Date.now();
+        // var start_label_time = Date.now();
         this.idNextProccessed = this.idLastProccessed + action;
 
         try {
@@ -90,39 +108,39 @@ function Buffer(length, idMaxPoint, savedFrames){
                     this.listFrames[this.idNextProccessed + idNeighbor].isSelected = true;
                 }
                 catch{
-                    console.log('miss pp', this.idNextProccessed + idNeighbor);
+                    // console.log('miss pp', this.idNextProccessed + idNeighbor);
                 }
             }
         } catch (error) {
             console.log('ERROR INDICES NEIGHBOR:', indicesNeighbor, this.countLabel);
         }
         
-        var end_label_time = Date.now();
-        labelTimes.push(end_label_time-start_label_time);
-        console.log(this.idLastProccessed, this.idNextProccessed);
+        // var end_label_time = Date.now();
+        // labelTimes.push(end_label_time-start_label_time);
+        // console.log(this.idLastProccessed, this.idNextProccessed);
     }
 
     this.countCookie = 0;
     this.CookieFrame = function(image){
         this.countCookie += 1;
-        console.log('Count cookie: ' + this.countCookie);
-        var start_cookie_time = Date.now();
+        // console.log('Count cookie: ' + this.countCookie);
+        // var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
         // this.listFrames[this.idPoint].time = time;
         this.idPoint += 1;
-        var end_cookie_time = Date.now();
-        cookieTimes.push(end_cookie_time - start_cookie_time);
+        // var end_cookie_time = Date.now();
+        // cookieTimes.push(end_cookie_time - start_cookie_time);
 
     this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
-            console.log("Start Upserver", this.idNextProccessed);
+            // console.log("Start Upserver", this.idNextProccessed);
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
-            var start_upserver_time = Date.now();
+            // var start_upserver_time = Date.now();
             
             predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)
-            var end_upserver_time = Date.now();
-            upserverTimes.push(end_upserver_time - start_upserver_time);
+            // var end_upserver_time = Date.now();
+            // upserverTimes.push(end_upserver_time - start_upserver_time);
             // console.log(this.idNextProccessed, this.listFrames[this.idNextProccessed].image);
         }       
     }

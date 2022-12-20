@@ -5,7 +5,7 @@ var LSTMNET;
 var pre_h = tf.zeros([1, 256], tf.float32);
 var pre_c = tf.zeros([1, 256], tf.float32);
 
-var actions = [];
+// var actions = [];
 
 async function loadMobileNet(){
     try {
@@ -46,20 +46,20 @@ function preprocess(img){
     let resizeShape = [img.shape[0], img.shape[1]];
     resizeShape[biggerDim] = Math.floor(biggerDimScale * RESIZE_SIZE);
     resizeShape[1-biggerDim] = RESIZE_SIZE;
-    var resizeImg = tf.image.resizeBilinear(img, resizeShape, IS_ALIGN_CORNERS, IS_HALF_PIXEL_CENTERS);
+    let resizeImg = tf.image.resizeBilinear(img, resizeShape, IS_ALIGN_CORNERS, IS_HALF_PIXEL_CENTERS);
 
     // slice and resize the image
     let cropStart = [START_CROP, START_CROP, 0];
     let cropSize = [CROP_SIZE, CROP_SIZE, 3];
     cropStart[biggerDim] = Math.floor((resizeShape[biggerDim] - CROP_SIZE)/2);
     
-    var cropImg = resizeImg.slice(cropStart, cropSize);
+    let cropImg = resizeImg.slice(cropStart, cropSize);
 
-    var normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
+    let normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
 
     // output = tf.cast(output, dtype='float32');
 
-    var output = normalImg.expandDims(0);
+    let output = normalImg.expandDims(0);
     normalImg.dispose();
     cropImg.dispose();
     resizeImg.dispose();
@@ -132,15 +132,15 @@ function extendBothFormula(action){
 function handlerAction(probs, buffer){
     // probs shape [1, 25] so need squeeze to shape [25] in order to can argmax,
     // .dataSync()[0] to convert integer GPU to CPU
-    var action = tf.tidy(()=>{
+    let action = tf.tidy(()=>{
         return tf.argMax(tf.squeeze(probs, 0)).dataSync()[0] + 1;
     }) 
     action = (action<ppArgs.minAction)?(ppArgs.minAction):action;
-    actions.push(action);
+    // actions.push(action);
 
     // Define which neighbor will be selected, Ex: output [-4, -2, 0, 2, 4]
     const indicesNeighbor = extendBothFormula(action);
-    console.log(action, indicesNeighbor);
+    // console.log(action, indicesNeighbor);
     probs.dispose();
     // label to buffer
     buffer.LabelFrames(action, indicesNeighbor);

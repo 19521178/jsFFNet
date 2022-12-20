@@ -25,6 +25,7 @@ const OutputContainer = function(fps, idContainer){
     this.pipButton = this.outputVideoContainer.querySelector('#pip-button');
 
     this.localStoreImg = new Image();
+    this.imgSrc;
     this.videoCtx = this.video.getContext('2d', { willReadFrequently: true });
     this.idPlaying = 0;
     this.lenVideo = 0;
@@ -62,6 +63,11 @@ const OutputContainer = function(fps, idContainer){
     this.pause = pause;
 
     this.timeUpdateEvent = new Event('timeupdate');
+    
+    this.localStoreImg.onload = (event) => {
+        URL.revokeObjectURL(event.target.src) // Once it loaded the resource, then you can free it at the beginning.
+        this.videoCtx.drawImage(event.target, 0, 0)
+    }
 
     this.initializeSize = () => {
         this.video.width = this.hiddenVideo.videoWidth;
@@ -218,9 +224,13 @@ const OutputContainer = function(fps, idContainer){
     // // window.requestAnimationFrame(this.displaySrcTime);
 
     this.displaySrcTime = async ()=>{
-        ldb.get(this.listImage[this.idPlaying], (value)=>{
-            this.localStoreImg.src = value;
-            this.videoCtx.drawImage(this.localStoreImg, 0, 0);
+        ldb.get(this.listImage[this.idPlaying], (blob)=>{
+            // delete this.imgSrc;
+            // this.imgSrc = value;
+            // this.localStoreImg.src = this.imgSrc;
+            // this.videoCtx.drawImage(this.localStoreImg, 0, 0);
+            // this.videoControls.dispatchEvent(this.timeUpdateEvent);
+            this.localStoreImg.src = URL.createObjectURL(blob)
             this.videoControls.dispatchEvent(this.timeUpdateEvent);
         });               
     }

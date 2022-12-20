@@ -23,7 +23,7 @@ if (true) {
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new Buffer(length=400, idMaxPoint=180, savedFrames=outputContainer.listImage);
+var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
@@ -52,7 +52,7 @@ async function readVideo(files) {
     if (files && files[0]) {
         console.log('ON CHANGE');
         const file = files[0];
-        var urlBlob = URL.createObjectURL(file);
+        let urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
         inputContainer.hiddenVideo.src = urlBlob;
         // outputContainer.hiddenVideo.src = urlBlob;
