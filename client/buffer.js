@@ -12,6 +12,8 @@ function BufferFrameElement(){
     this.time = 0;
 }
 
+var localStoreWorker = new Worker('/workers/store-image-worker.js');
+
 function BufferFrame(length, idMaxPoint, savedFrames){
     this.savedFrames = savedFrames;
     this.listFrames = [];
@@ -29,6 +31,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
     this.tmpImg = null;
 
     function storeImg(expiredFrame, nameImg){
+        // let renderPromise = new Promise()
         tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
 
         localStoreCanvas.toBlob((blob) => {
@@ -41,7 +44,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     // this.numMissExpired = 0;
     this.Expired = function(){
-        // console.log("Start Expire")
+        console.log("Start Expire")
         // var start_expire_time = Date.now();
         // if (this.idLastProccessed > 0){
             this.countExpired+=1;
@@ -55,10 +58,15 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
             if (expiredFrame.isSelected === true){
                 this.idStore += 1;
-                // console.log('Up image'+this.idStore);
+                console.log('Up image'+this.idStore);
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
                 savedFrames.push(nameImg);
-                storeImg(expiredFrame, nameImg);
+                // storeImg(expiredFrame, nameImg);
+                localStoreWorker.postMessage({
+                    canvas: localStoreCanvas,
+                    image: expiredFrame.image,
+                    nameImg: nameImg
+                });
 
                 // this.tmpImg = localStoreCanvas.toDataURL('image/jpeg', quality=0.1);
                 // ldb.set(
@@ -114,7 +122,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
     this.countCookie = 0;
     this.CookieFrame = function(image){
         this.countCookie += 1;
-        // console.log('Count cookie: ' + this.countCookie);
+        console.log('Count cookie: ' + this.countCookie);
         // var start_cookie_time = Date.now();
         this.listFrames[this.idPoint].image = image;
         this.listFrames[this.idPoint].time = Date.now();
@@ -126,7 +134,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
-            // console.log("Start Upserver", this.idNextProccessed);
+            console.log("Start Upserver", this.idNextProccessed);
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
             // var start_upserver_time = Date.now();
