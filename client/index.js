@@ -138,7 +138,12 @@ btnProcess.onclick = ()=>{
             gl = await tf.browser.fromPixels(captureCanvas);
             // inputContainer.listImage.push(gl);
             buffer.CookieFrame(gl);
-            outputContainer.fcUpdateVideoDuration();
+            buffer.UpServer();
+            if (buffer.idPoint >= buffer.idMaxPoint){
+                buffer.Expired();
+                outputContainer.fcUpdateVideoDuration();
+            }
+            
 
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){
             //     let startTimeStore = Date.now();

@@ -34,11 +34,11 @@ function Buffer(length, idMaxPoint, savedFrames){
     this.countExpired = 0;
     this.idStore = -1;
 
-    this.numMissExpired = 0;
+    // this.numMissExpired = 0;
     this.Expired = function(){
         console.log("Start Expire")
         var start_expire_time = Date.now();
-        if (this.idLastProccessed > 0){
+        // if (this.idLastProccessed > 0){
             this.countExpired+=1;
             // Pop first element and push new init element to tail
             let expiredFrame = this.listFrames.shift();
@@ -67,10 +67,10 @@ function Buffer(length, idMaxPoint, savedFrames){
             
             delete expiredFrame;
             
-        }
-        else{
-            this.numMissExpired += 1;
-        }
+        // }
+        // else{
+        //     this.numMissExpired += 1;
+        // }
         var end_expire_time = Date.now();
         expireTimes.push(end_expire_time-start_expire_time);
         
@@ -110,7 +110,10 @@ function Buffer(length, idMaxPoint, savedFrames){
         this.listFrames[this.idPoint].image = image;
         // this.listFrames[this.idPoint].time = time;
         this.idPoint += 1;
+        var end_cookie_time = Date.now();
+        cookieTimes.push(end_cookie_time - start_cookie_time);
 
+    this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
             console.log("Start Upserver", this.idNextProccessed);
             this.idLastProccessed = this.idNextProccessed;
@@ -121,23 +124,23 @@ function Buffer(length, idMaxPoint, savedFrames){
             var end_upserver_time = Date.now();
             upserverTimes.push(end_upserver_time - start_upserver_time);
             // console.log(this.idNextProccessed, this.listFrames[this.idNextProccessed].image);
+        }       
+    }
 
 
-        }          
 
-        if (this.idPoint >= this.idMaxPoint){
-            this.Expired();
-        }
+           
 
-        if (this.idNextProccessed > this.idPoint - 1){
-            while(this.numMissExpired > 0){
-                this.Expired();
-                this.numMissExpired -= 1;
-            }
-        }
+        
 
-        var end_cookie_time = Date.now();
-        cookieTimes.push(end_cookie_time - start_cookie_time);
+        // if (this.idNextProccessed > this.idPoint - 1){
+        //     while(this.numMissExpired > 0){
+        //         this.Expired();
+        //         this.numMissExpired -= 1;
+        //     }
+        // }
+
+        
         
     }
 }
