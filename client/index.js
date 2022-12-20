@@ -131,7 +131,7 @@ function analystOutput(){
     delayTimes.forEach(x=>{
         sum += x;
         min = Math.min(min, x);
-        max = Map.max(max, x);
+        max = Math.max(max, x);
     })
     console.log('DelayTimes:\tmean:', sum/delayTimes.length, '\tmin:', min, '\tmax:', max);
 }
