@@ -41,26 +41,30 @@ const IS_ALIGN_CORNERS = false;
 const IS_HALF_PIXEL_CENTERS = true;
 // const END_CROP = START_CROP + CROP_SIZE;
 function preprocess(img){
-    let biggerDim = (img.shape[0]>img.shape[1]) ? 0 : 1;
-    let biggerDimScale = img.shape[biggerDim] / img.shape[1 - biggerDim]
+    return tf.tidy(()=>{
+        let biggerDim = (img.shape[0]>img.shape[1]) ? 0 : 1;
+        let biggerDimScale = img.shape[biggerDim] / img.shape[1 - biggerDim]
 
-    let resizeShape = [img.shape[0], img.shape[1]];
-    resizeShape[biggerDim] = Math.floor(biggerDimScale * RESIZE_SIZE);
-    resizeShape[1-biggerDim] = RESIZE_SIZE;
-    let resizeImg = tf.image.resizeBilinear(img, resizeShape, IS_ALIGN_CORNERS, IS_HALF_PIXEL_CENTERS);
+        let resizeShape = [img.shape[0], img.shape[1]];
+        resizeShape[biggerDim] = Math.floor(biggerDimScale * RESIZE_SIZE);
+        resizeShape[1-biggerDim] = RESIZE_SIZE;
+        let resizeImg = tf.image.resizeBilinear(img, resizeShape, IS_ALIGN_CORNERS, IS_HALF_PIXEL_CENTERS);
 
-    // slice and resize the image
-    let cropStart = [START_CROP, START_CROP, 0];
-    let cropSize = [CROP_SIZE, CROP_SIZE, 3];
-    cropStart[biggerDim] = Math.floor((resizeShape[biggerDim] - CROP_SIZE)/2);
+        // slice and resize the image
+        let cropStart = [START_CROP, START_CROP, 0];
+        let cropSize = [CROP_SIZE, CROP_SIZE, 3];
+        cropStart[biggerDim] = Math.floor((resizeShape[biggerDim] - CROP_SIZE)/2);
+        
+        let cropImg = tf.slice(resizeImg, cropStart, cropSize);
+
+        let normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
+
+        // output = tf.cast(output, dtype='float32');
+
+        let output = normalImg.expandDims(0);
+        return output;
+    })
     
-    let cropImg = resizeImg.slice(cropStart, cropSize);
-
-    let normalImg = cropImg.div(tf.scalar(255)).sub([0.485, 0.456, 0.406]).div([0.229, 0.224, 0.225]);
-
-    // output = tf.cast(output, dtype='float32');
-
-    let output = normalImg.expandDims(0);
     normalImg.dispose();
     cropImg.dispose();
     resizeImg.dispose();
@@ -68,7 +72,9 @@ function preprocess(img){
 }
 
 function extract(inputTensor){
-    return MOBILENET.predict(inputTensor);
+    let feat = MOBILENET.predict(inputTensor);
+    inputTensor.dispose();
+    return feat;
 }
 
 function predict(feat, buffer){
@@ -81,9 +87,10 @@ function predict(feat, buffer){
             pre_c = results[1];
             pre_h.dispose();
             pre_h = results[2];
+            feat.dispose();
         })
 
-    feat.dispose();
+    // feat.dispose();
 }
 
 var ppArgs = {

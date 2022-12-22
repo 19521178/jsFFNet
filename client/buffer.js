@@ -1,3 +1,39 @@
+// import {createTexture, createTextureFrameBuffer, getWebGLRenderingContext, checkError} from "./utils/gl/gl-util.js";
+// import {MaskStep, RenderTensor, BackgroundMixerRenderTensor} from "./utils/gl/gl-class.js";
+function postTensor(tensor){
+    return tf.tidy(()=>{
+        [red, green, blue] = tf.split(tensor, 3, 2);
+        alpha = tf.ones([tensor.shape[0], tensor.shape[1], 1], 'int32').mul(255).toInt();
+        rgba = tf.stack([red, green, blue, alpha], 2);
+        return tf.squeeze(tf.div(rgba, 255));
+    })
+}
+
+function showTensorInCanvasGL(tensor, height, width, canvasGL){
+    /* WARNING! WebGL context must be initialized in the main script.
+       Example:
+           import {getWebGLRenderingContext} from "../utils/webgl/gl-util.js";
+           var canvasGL = getWebGLRenderingContext(resultCanvas);
+    */
+    let renderTensorGL = new RenderTensor(canvasGL);
+    /* WARNING! dataToGPU keeps the tensor on GPU, but it becomes an
+                RGBA texture for WebGL, so the tensor should not be RGB.
+    */
+    let data = tensor.dataToGPU({customTexShape: [height, width]});
+
+    // Drawing texture
+    let result = renderTensorGL.process(createTexture(canvasGL, data.texture, width, height));
+    canvasGL.bindFramebuffer(canvasGL.DRAW_FRAMEBUFFER, null);
+    canvasGL.bindFramebuffer(canvasGL.READ_FRAMEBUFFER, result.framebuffer_);
+    canvasGL.blitFramebuffer(0, 0, width, height, 0, height, width, 0,
+        canvasGL.COLOR_BUFFER_BIT, canvasGL.LINEAR);
+    canvasGL.flush();
+
+    // Cleaning memory
+    tensor.dispose();
+    data.tensorRef.dispose();
+}
+
 
 // var cookieTimes = [];
 // var upserverTimes = [];
@@ -5,12 +41,13 @@
 // var expireTimes = [];
 // var result;
 var delayTimes = [];
-
+// var tmpTensor;
 function BufferFrameElement(){
     this.image = undefined;
     this.isSelected = false;
     this.time = 0;
 }
+
 
 function BufferFrame(length, idMaxPoint, savedFrames){
     this.savedFrames = savedFrames;
@@ -26,28 +63,33 @@ function BufferFrame(length, idMaxPoint, savedFrames){
     this.countExpired = 0;
     this.idStore = -1;
 
-    this.tmpImg = null;
+    // this.tmpImg = null;
+
 
     async function storeImg(expiredFrame, nameImg){
+        const rgbImg = postTensor(expiredFrame.image)
+        // tmpTensor = rgbImg;
+        // data = rgbImg.dataToGPU({ customTexShape: [localStoreCanvas.width, localStoreCanvas.height] }); // get pointer to tensor texture on gpu
+        // tmpTensor = data;
+        // drawTexture(localStoreCanvas, data.texture); // draw texture on canvas
 
-        // const data = expiredFrame.image.dataToGPU({ customTexShape: [localStoreCanvas.width, localStoreCanvas.height] }); // get pointer to tensor texture on gpu
-        
-        // await drawTexture(localStoreCanvas, data.texture); // draw texture on canvas
-        // tf.dispose(data.tensorRef); // dispose tensor
-        tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+        // tf.browser.toPixels(expiredFrame.image, localStoreCanvas);
+        await showTensorInCanvasGL(rgbImg, localStoreCanvas.height, localStoreCanvas.width, localStoreGlCtx);
 
         localStoreCanvas.toBlob((blob) => {
             ldb.set(
                 nameImg, 
                 blob,
             );
-        }, 'image/jpeg', 0.1);
+        }, 'image/webp', 0.1);
+        
+        // await tf.dispose(data.tensorRef); // dispose tensor
+        // await syncWait(tf.backend().getGPGPUContext().gl); 
         
     }
 
     // this.numMissExpired = 0;
     this.Expired = function(){
-        console.log("Start Expire")
         // var start_expire_time = Date.now();
         // if (this.idLastProccessed > 0){
             this.countExpired+=1;
@@ -60,20 +102,12 @@ function BufferFrame(length, idMaxPoint, savedFrames){
             this.idPoint -= 1;
 
             if (expiredFrame.isSelected === true){
+                console.log("Push output");
                 this.idStore += 1;
                 console.log('Up image'+this.idStore);
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
                 savedFrames.push(nameImg);
                 storeImg(expiredFrame, nameImg);
-
-                // this.tmpImg = localStoreCanvas.toDataURL('image/jpeg', quality=0.1);
-                // ldb.set(
-                //     nameImg, 
-                //     this.tmpImg,
-                //     ()=>{
-                //         delete this.tmpImg;
-                //     }
-                // );
                 
                 expiredFrame.image.dispose();
             }
@@ -82,7 +116,9 @@ function BufferFrame(length, idMaxPoint, savedFrames){
             }
             delayTimes.push(Date.now() - expiredFrame.time);
             
-            delete expiredFrame;
+            delete expiredFrame.image;
+            delete expiredFrame.time;
+            delete expiredFrame.isSelected;
             
         // }
         // else{
@@ -114,7 +150,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
         
         // var end_label_time = Date.now();
         // labelTimes.push(end_label_time-start_label_time);
-        // console.log(this.idLastProccessed, this.idNextProccessed);
+        console.log(this.idLastProccessed, this.idNextProccessed);
     }
 
     this.countCookie = 0;
@@ -132,7 +168,7 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
-            console.log("Start Upserver", this.idNextProccessed);
+            console.log("Upserver", this.idNextProccessed);
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
             // var start_upserver_time = Date.now();

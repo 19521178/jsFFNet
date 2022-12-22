@@ -1,4 +1,4 @@
-
+// import {getWebGLRenderingContext} from "./utils/gl/gl-util";
 var fps = 30;
 
 var getImgDataTimes = [];
@@ -34,6 +34,31 @@ var captureCanvas = document.getElementById('capture-canvas');
 var captureCtx;
 // var localStoreCanvas = document.createElement('canvas');
 var localStoreCanvas = document.getElementById('local-store-canvas');
+var localStoreGlCtx;
+readyWebgl();
+async function readyWebgl(){
+    // await registerWebGLbackend(localStoreCanvas);
+    // await tf.setBackend('customgl');
+    // await tf.ready();
+    // await syncWait(tf.backend().getGPGPUContext().gl); 
+
+    const customBackendName = 'custom-webgl2';
+    const kernels = tf.getKernelsForBackend('webgl');
+    kernels.forEach(kernelConfig => {
+        const newKernelConfig = {...kernelConfig, backendName: customBackendName};
+        tf.registerKernel(newKernelConfig);
+    });
+    localStoreGlCtx = getWebGLRenderingContext(localStoreCanvas);
+    tf.registerBackend(customBackendName, () => {
+        return new tf.MathBackendWebGL(
+            new tf.GPGPUContext(localStoreGlCtx));
+    });
+    await tf.setBackend(customBackendName);
+    await tf.ready();
+}
+// readyWebgl();
+
+
 ldb.clear();
 // var storeCanvas;
 // var storeCtx;
@@ -74,6 +99,11 @@ inputTag.addEventListener('change', (e)=>{
     readVideo(e.target.files);
 });
 uploadButton.disabled = true;
+uploadButton.addEventListener('click', async ()=>{
+    await captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
+    tensor = await tf.browser.fromPixels(captureCanvas);
+    showTensorInCanvasGL(postTensor(tensor), captureCanvas.height, captureCanvas.width, localStoreGlCtx);
+})
 
 inputContainer.hiddenVideo.addEventListener('loadedmetadata', async ()=>{
     await inputContainer.hiddenVideo.play();
@@ -162,9 +192,9 @@ btnProcess.onclick = ()=>{
             inputContainer.lenVideo = Math.floor(hiddenVideo.currentTime * fps);
             inputContainer.fcUpdateVideoDuration();
             captureCtx.drawImage(hiddenVideo, 0, 0, captureCanvas.width, captureCanvas.height);
-            gl = await tf.browser.fromPixels(captureCanvas);
-            // inputContainer.listImage.push(gl);
-            buffer.CookieFrame(gl);
+            tensor = await tf.browser.fromPixels(captureCanvas);
+            // inputContainer.listImage.push(tensor);
+            buffer.CookieFrame(tensor);
             buffer.UpServer();
             if (buffer.idPoint >= buffer.idMaxPoint){
                 buffer.Expired();

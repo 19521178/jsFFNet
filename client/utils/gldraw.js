@@ -240,17 +240,17 @@ const glError = (gl, label) => {
    * format: 'rgb'  assumes input texture is in [RGB] format // in progress
    * @returns instance of GLProcessor
    */
-  function drawTexture(canvas, texture, options = { format: "rgba" }) {
+  async function drawTexture(canvas, texture, options = { format: "rgba" }) {
     if (processor?.gl?.canvas !== canvas) {
-      const gl = canvas.getContext("webgl2")
+      const gl = canvas.getContext("webgl2");
       if (!gl) throw new Error("webgl2 getContext")
       processor = new GLProcessor(gl, options) // creates one instance of the main class
     }
     const mask = new GLTexture(
       processor.gl,
       texture,
-      processor.frame.width,
-      processor.frame.height
+      canvas.width,
+      canvas.height
     ) // create usable texture from tensor data
     processor.program.useProgram() // switch to this program if something else was using webgl
     processor.bindTextures([["mask", mask]]) // upload texture to gpu
