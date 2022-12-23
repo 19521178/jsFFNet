@@ -102,7 +102,6 @@ function BufferFrame(length, idMaxPoint, savedFrames){
             this.idPoint -= 1;
 
             if (expiredFrame.isSelected === true){
-                console.log("Push output");
                 this.idStore += 1;
                 console.log('Up image'+this.idStore);
                 let nameImg = 'output_'+this.idStore.toString().padStart(6, '0');
@@ -168,11 +167,10 @@ function BufferFrame(length, idMaxPoint, savedFrames){
 
     this.UpServer = function(){
         if (this.idNextProccessed <= this.idPoint - 1){
-            console.log("Upserver", this.idNextProccessed);
+            console.log("Upserver", this.idNextProccessed); 
             this.idLastProccessed = this.idNextProccessed;
             this.idNextProccessed = Infinity;
             // var start_upserver_time = Date.now();
-            
             predict(extract(preprocess(this.listFrames[this.idLastProccessed].image)), this)
             // var end_upserver_time = Date.now();
             // upserverTimes.push(end_upserver_time - start_upserver_time);

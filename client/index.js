@@ -3,6 +3,7 @@ var fps = 30;
 
 var getImgDataTimes = [];
 
+
 const inputContainer = new InputContainer(fps, 'input-video-container');
 inputContainer.hiddenVideo.muted = true;
 if (true) {
