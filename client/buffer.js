@@ -81,11 +81,10 @@ function BufferFrame(length, idMaxPoint, savedFrames){
                 nameImg, 
                 blob,
             );
-        }, 'image/webp', 0.1);
+        }, 'image/webp', 0.99);
         
         // await tf.dispose(data.tensorRef); // dispose tensor
         // await syncWait(tf.backend().getGPGPUContext().gl); 
-        
     }
 
     // this.numMissExpired = 0;

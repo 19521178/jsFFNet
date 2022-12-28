@@ -37,6 +37,7 @@ const blobToBase64 = blob => {
     });
 };
 var vidName;
+var outputQuality = 1.0;
 // var lengthSegment = fps * 30;
 // var isFirstSegment = true;
 // var idStartSegment = 0;
@@ -182,15 +183,16 @@ async function saveCSV (array, filename) {
         await fileStream.close();
     } catch (error) {
         console.log(error);
-        console.log('Changing type of save file: .csv -> .txt');
-        saveStr = array.join('\n');
-        let a = document.createElement('a');
-        let urlText = URL.createObjectURL(new Blob([saveStr]), {type: "text/plain"});
-        a.href = urlText;
-        a.download = filename + '.txt';
-        a.click();
-        URL.revokeObjectURL(urlText);
-        // document.body.removeChild(a);
+        // if (error !== DOMException.ABORT_ERR.){
+            console.log('Changing type of save file: .csv -> .txt');
+            saveStr = array.join('\n');
+            let a = document.createElement('a');
+            let urlText = URL.createObjectURL(new Blob([saveStr]), {type: "text/plain"});
+            a.href = urlText;
+            a.download = filename + '.txt';
+            a.click();
+            URL.revokeObjectURL(urlText);
+        // }
     }
     
 }
@@ -199,18 +201,44 @@ async function saveOutput(){
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
     saveCSV(delayTimes, 'delay-time');
-    videoEncoder = new Whammy.Video(fps);
-    const allAppendPromises = outputContainer.listImage.map(nameImg=>{
-        return new Promise((resolve)=>{
+    videoEncoder = new Whammy.Video(fps, outputQuality);
+    // let allAppendPromises = outputContainer.listImage.slice(0, 50).map(nameImg=>{
+    //     return new Promise((resolve)=>{
+    //         ldb.get(nameImg, (blob)=>{
+    //             blobToBase64(blob).then(url=>{
+    //                 videoEncoder.add(url);
+    //                 resolve();
+    //             })
+    //         });     
+    //     })
+    // })
+    // await Promise.all(allAppendPromises);
+    for (let nameImg of outputContainer.listImage){
+        appendPromise = new Promise((resolve)=>{
             ldb.get(nameImg, (blob)=>{
                 blobToBase64(blob).then(url=>{
                     videoEncoder.add(url);
                     resolve();
                 })
-            });     
+            });    
         })
-    })
-    await Promise.all(allAppendPromises);
+        await appendPromise;
+    }
+    
+    // await videoEncoder.compile(false, (output)=>{delete allAppendPromises;});
+
+    // videoEncoder = new Whammy.Video(fps, outputQuality);
+    // allAppendPromises = outputContainer.listImage.map(nameImg=>{
+    //     return new Promise((resolve)=>{
+    //         ldb.get(nameImg, (blob)=>{
+    //             blobToBase64(blob).then(url=>{
+    //                 videoEncoder.add(url);
+    //                 resolve();
+    //             })
+    //         });     
+    //     })
+    // })
+    // await Promise.all(allAppendPromises);
     await videoEncoder.compile(false, async (vidBlob)=>{
         try {
             const fileHandle = await window.showSaveFilePicker({
