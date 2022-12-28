@@ -26,7 +26,7 @@ if (true) {
 
 var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContainer.listImage);
 
-var videoEncoder = new Whammy.Video(fps);
+var videoEncoder;
 const blobToBase64 = blob => {
     const reader = new FileReader();
     reader.readAsDataURL(blob);
@@ -180,11 +180,49 @@ async function saveCSV (array, filename) {
     await fileStream.write(myBlob);
     await fileStream.close();
 }
+// async function saveOutput(){
+//     btnProcess.textContent = 'Saving';
+//     btnProcess.disabled = true;
+//     saveCSV(delayTimes, 'delay-time.csv');
+//     await videoEncoder.compile(false, async (vidBlob)=>{
+//         // blobToBase64(vidBlob).then(url=>{
+//         //     let a = document.createElement("a");
+//         //     a.href = url;
+//         //     a.download = vidName.split('.')[0] + '_VFF.webm';
+//         //     document.body.appendChild(a);
+//         //     a.click();
+//         // })
+
+//         // let downloadURL = URL.createObjectURL(vidBlob);
+//         // let a = document.createElement("a");
+//         // a.href = downloadURL;
+//         // a.download = vidName.split('.')[0] + '_VFF.webm';
+//         // document.body.appendChild(a);
+//         // a.click();
+//         // URL.revokeObjectURL(downloadURL);
+//         videoEncoder = new Whammy.Video(fps);
+//         btnProcess.textContent = 'Save Output';
+//         btnProcess.disabled = false;
+//         const fileHandle = await window.showSaveFilePicker({
+//             suggestedName : vidName.split('.')[0] + '_VFF',
+//             types: [{
+//                 description: "WEBM file",
+//                 accept: {"video/webm": [".webm"]}
+//             }]
+//         });
+//         const fileStream = await fileHandle.createWritable();
+    
+//         // (E) WRITE FILE
+//         await fileStream.write(vidBlob);
+//         await fileStream.close();
+//     });
+// }
 
 async function saveOutput(){
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
     saveCSV(delayTimes, 'delay-time.csv');
+    videoEncoder = new Whammy.Video(fps);
     const allAppendPromises = outputContainer.listImage.map(nameImg=>{
         return new Promise((resolve)=>{
             ldb.get(nameImg, (blob)=>{
@@ -212,7 +250,8 @@ async function saveOutput(){
         // document.body.appendChild(a);
         // a.click();
         // URL.revokeObjectURL(downloadURL);
-
+        btnProcess.textContent = 'Save Output';
+        btnProcess.disabled = false;
         const fileHandle = await window.showSaveFilePicker({
             suggestedName : vidName.split('.')[0] + '_VFF',
             types: [{
@@ -226,8 +265,6 @@ async function saveOutput(){
         await fileStream.write(vidBlob);
         await fileStream.close();
     });
-    btnProcess.textContent = 'Save Output';
-    btnProcess.disabled = false;
 }
 
 function analystOutput(){
@@ -243,18 +280,18 @@ function analystOutput(){
     console.log('DelayTimes:\tmean:', sum/delayTimes.length, '\tmin:', min, '\tmax:', max);
 }
 
-hiddenVideo.addEventListener('ended', ()=>{
+hiddenVideo.addEventListener('ended', async ()=>{
     btnProcess.click();
     // btnProcess.disabled = true;
     btnProcess.textContent = 'Save Output';
     btnProcess.onclick = saveOutput;
-    setTimeout(()=>{
-        while(buffer.idPoint > 0){
-            buffer.Expired();
-        }
-        outputContainer.fcUpdateVideoDuration();
-        analystOutput();
-    }, 100);
+
+    while(buffer.idPoint > 0){
+        await buffer.Expired();
+    }
+    outputContainer.fcUpdateVideoDuration();
+    analystOutput();
+
 })
 
 var btnProcess = document.getElementById('play-process');
