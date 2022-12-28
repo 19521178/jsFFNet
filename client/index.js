@@ -182,6 +182,9 @@ async function saveCSV (array, filename) {
 }
 
 async function saveOutput(){
+    btnProcess.textContent = 'Saving';
+    btnProcess.disabled = true;
+    saveCSV(delayTimes, 'delay-time.csv');
     const allAppendPromises = outputContainer.listImage.map(nameImg=>{
         return new Promise((resolve)=>{
             ldb.get(nameImg, (blob)=>{
@@ -193,7 +196,7 @@ async function saveOutput(){
         })
     })
     await Promise.all(allAppendPromises);
-    await videoEncoder.compile(false, (vidBlob)=>{
+    await videoEncoder.compile(false, async (vidBlob)=>{
         // blobToBase64(vidBlob).then(url=>{
         //     let a = document.createElement("a");
         //     a.href = url;
@@ -201,14 +204,30 @@ async function saveOutput(){
         //     document.body.appendChild(a);
         //     a.click();
         // })
-        let downloadURL = URL.createObjectURL(vidBlob);
-        let a = document.createElement("a");
-        a.href = downloadURL;
-        a.download = vidName.split('.')[0] + '_VFF.webm';
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(downloadURL);
+
+        // let downloadURL = URL.createObjectURL(vidBlob);
+        // let a = document.createElement("a");
+        // a.href = downloadURL;
+        // a.download = vidName.split('.')[0] + '_VFF.webm';
+        // document.body.appendChild(a);
+        // a.click();
+        // URL.revokeObjectURL(downloadURL);
+
+        const fileHandle = await window.showSaveFilePicker({
+            suggestedName : vidName.split('.')[0] + '_VFF',
+            types: [{
+                description: "WEBM file",
+                accept: {"video/webm": [".webm"]}
+            }]
+        });
+        const fileStream = await fileHandle.createWritable();
+    
+        // (E) WRITE FILE
+        await fileStream.write(vidBlob);
+        await fileStream.close();
     });
+    btnProcess.textContent = 'Save Output';
+    btnProcess.disabled = false;
 }
 
 function analystOutput(){
@@ -222,8 +241,6 @@ function analystOutput(){
         max = Math.max(max, x);
     })
     console.log('DelayTimes:\tmean:', sum/delayTimes.length, '\tmin:', min, '\tmax:', max);
-    saveCSV(delayTimes, 'delay-time.csv');
-
 }
 
 hiddenVideo.addEventListener('ended', ()=>{
