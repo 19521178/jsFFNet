@@ -151,72 +151,49 @@ async function saveCSV (array, filename) {
     // (A) ARRAY OF DATA
 
     // (B) ARRAY TO CSV STRING
-    var csv = "";
-    for (let row of array) {
-        try {
-            for (let col of row) { csv += col + ","; }
-        } catch (error) {
-            csv += row + ',';
-            // console.log(error)
+    try {
+        var csv = "";
+        for (let row of array) {
+            try {
+                for (let col of row) { csv += col + ","; }
+            } catch (error) {
+                csv += row + ',';
+                // console.log(error)
+            }
+            
+            csv += "\r\n";
         }
-        
-        csv += "\r\n";
+
+        // (C) CREATE BLOB OBJECT
+        var myBlob = new Blob([csv], {type: "text/csv"});
+
+        // (D) FILE HANDLER & FILE STREAM
+        const fileHandle = await window.showSaveFilePicker({
+            suggestedName : filename,
+            types: [{
+                description: "CSV file",
+                accept: {"text/csv": [".csv"]}
+            }]
+        });
+        const fileStream = await fileHandle.createWritable();
+
+        // (E) WRITE FILE
+        await fileStream.write(myBlob);
+        await fileStream.close();
+    } catch (error) {
+        console.log(error);
+        console.log('Changing type of save file: .csv -> .txt');
+        saveStr = array.join('\n');
+        let a = document.createElement('a');
+        let urlText = URL.createObjectURL(new Blob(saveStr), {type: "text/plain"});
+        a.href = urlText;
+        a.download = "filename.txt";
+        a.click();
+        URL.revokeObjectURL(urlText);
+        document.body.removeChild(a);
     }
-
-    // (C) CREATE BLOB OBJECT
-    var myBlob = new Blob([csv], {type: "text/csv"});
-
-    // (D) FILE HANDLER & FILE STREAM
-    const fileHandle = await window.showSaveFilePicker({
-        suggestedName : filename,
-        types: [{
-            description: "CSV file",
-            accept: {"text/csv": [".csv"]}
-        }]
-    });
-    const fileStream = await fileHandle.createWritable();
-
-    // (E) WRITE FILE
-    await fileStream.write(myBlob);
-    await fileStream.close();
-}
-// async function saveOutput(){
-//     btnProcess.textContent = 'Saving';
-//     btnProcess.disabled = true;
-//     saveCSV(delayTimes, 'delay-time.csv');
-//     await videoEncoder.compile(false, async (vidBlob)=>{
-//         // blobToBase64(vidBlob).then(url=>{
-//         //     let a = document.createElement("a");
-//         //     a.href = url;
-//         //     a.download = vidName.split('.')[0] + '_VFF.webm';
-//         //     document.body.appendChild(a);
-//         //     a.click();
-//         // })
-
-//         // let downloadURL = URL.createObjectURL(vidBlob);
-//         // let a = document.createElement("a");
-//         // a.href = downloadURL;
-//         // a.download = vidName.split('.')[0] + '_VFF.webm';
-//         // document.body.appendChild(a);
-//         // a.click();
-//         // URL.revokeObjectURL(downloadURL);
-//         videoEncoder = new Whammy.Video(fps);
-//         btnProcess.textContent = 'Save Output';
-//         btnProcess.disabled = false;
-//         const fileHandle = await window.showSaveFilePicker({
-//             suggestedName : vidName.split('.')[0] + '_VFF',
-//             types: [{
-//                 description: "WEBM file",
-//                 accept: {"video/webm": [".webm"]}
-//             }]
-//         });
-//         const fileStream = await fileHandle.createWritable();
     
-//         // (E) WRITE FILE
-//         await fileStream.write(vidBlob);
-//         await fileStream.close();
-//     });
-// }
+}
 
 async function saveOutput(){
     btnProcess.textContent = 'Saving';
@@ -235,35 +212,36 @@ async function saveOutput(){
     })
     await Promise.all(allAppendPromises);
     await videoEncoder.compile(false, async (vidBlob)=>{
-        // blobToBase64(vidBlob).then(url=>{
-        //     let a = document.createElement("a");
-        //     a.href = url;
-        //     a.download = vidName.split('.')[0] + '_VFF.webm';
-        //     document.body.appendChild(a);
-        //     a.click();
-        // })
+        try {
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName : vidName.split('.')[0] + '_VFF',
+                types: [{
+                    description: "WEBM file",
+                    accept: {"video/webm": [".webm"]}
+                }]
+            });
+            const fileStream = await fileHandle.createWritable();
+        
+            // (E) WRITE FILE
+            await fileStream.write(vidBlob);
+            await fileStream.close();
+        } catch (error) {
+            console.log(error);
+            console.log('USING OTHER WAY TO SAVE');
+            let downloadURL = URL.createObjectURL(vidBlob);
+            let a = document.createElement("a");
+            a.href = downloadURL;
+            a.download = vidName.split('.')[0] + '_VFF.webm';
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(downloadURL);
+            document.body.removeChild(a);
+        }
+        
 
-        // let downloadURL = URL.createObjectURL(vidBlob);
-        // let a = document.createElement("a");
-        // a.href = downloadURL;
-        // a.download = vidName.split('.')[0] + '_VFF.webm';
-        // document.body.appendChild(a);
-        // a.click();
-        // URL.revokeObjectURL(downloadURL);
+        
         btnProcess.textContent = 'Save Output';
         btnProcess.disabled = false;
-        const fileHandle = await window.showSaveFilePicker({
-            suggestedName : vidName.split('.')[0] + '_VFF',
-            types: [{
-                description: "WEBM file",
-                accept: {"video/webm": [".webm"]}
-            }]
-        });
-        const fileStream = await fileHandle.createWritable();
-    
-        // (E) WRITE FILE
-        await fileStream.write(vidBlob);
-        await fileStream.close();
     });
 }
 
