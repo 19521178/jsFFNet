@@ -185,12 +185,12 @@ async function saveCSV (array, filename) {
         console.log('Changing type of save file: .csv -> .txt');
         saveStr = array.join('\n');
         let a = document.createElement('a');
-        let urlText = URL.createObjectURL(new Blob(saveStr), {type: "text/plain"});
+        let urlText = URL.createObjectURL(new Blob([saveStr]), {type: "text/plain"});
         a.href = urlText;
-        a.download = "filename.txt";
+        a.download = filename + '.txt';
         a.click();
         URL.revokeObjectURL(urlText);
-        document.body.removeChild(a);
+        // document.body.removeChild(a);
     }
     
 }
@@ -198,7 +198,7 @@ async function saveCSV (array, filename) {
 async function saveOutput(){
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
-    saveCSV(delayTimes, 'delay-time.csv');
+    saveCSV(delayTimes, 'delay-time');
     videoEncoder = new Whammy.Video(fps);
     const allAppendPromises = outputContainer.listImage.map(nameImg=>{
         return new Promise((resolve)=>{
