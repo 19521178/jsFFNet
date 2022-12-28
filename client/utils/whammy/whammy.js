@@ -442,24 +442,76 @@ window.Whammy = (function(){
 	// break which makes me make up puns. well, enough riff-raff (aha a
 	// rescue of sorts), this function was ripped wholesale from weppy
 
-	function parseRIFF(string){
+	function readUint32LittleEndian(buffer, offset) {
+		let val = parseInt(
+			buffer
+				.substr(offset, 4)
+				.split("")
+				.map(function(i) {
+				var unpadded = i.charCodeAt(0).toString(2);
+				return new Array(8 - unpadded.length + 1).join("0") + unpadded;
+				})
+				.reverse() 
+				.join(""),
+			2
+		);
+		return val;
+	}
+  
+
+	function extractBitStreamFromVp8x(buffer) {
+
+		let offset = 4 + 1 + 3 + 3 + 3;
+		while (offset < buffer.length) {
+			let chunkTag = buffer.substr(offset, 4);
+			//console.log(`chunkTag: \"${chunkTag}\"`);
+			offset += 4;
+			let chunkSize = readUint32LittleEndian(buffer, offset);
+			//console.log("chunkSize:", chunkSize);
+			offset += 4;
+			switch (chunkTag) {
+				case "VP8 ":
+				case "VP8L":
+					const size = buffer.substr(offset - 4, 4);
+					const body = buffer.substr(offset, chunkSize);
+					return size + body; 
+				default:
+					offset += chunkSize;
+					break;
+			}
+		}
+		console.error("VP8X format error: missing VP8/VP8L chunk.");
+	}
+  
+	function parseRIFF(string) {
+		//console.log("binary string:", string);
 		var offset = 0;
 		var chunks = {};
 
 		while (offset < string.length) {
 			var id = string.substr(offset, 4);
 			chunks[id] = chunks[id] || [];
-			if (id == 'RIFF' || id == 'LIST') {
-				var len = parseInt(string.substr(offset + 4, 4).split('').map(function(i){
-					var unpadded = i.charCodeAt(0).toString(2);
-					return (new Array(8 - unpadded.length + 1)).join('0') + unpadded
-				}).join(''),2);
+			if (id == "RIFF" || id == "LIST") {
+				var len = readUint32LittleEndian(string, offset + 4)
 				var data = string.substr(offset + 4 + 4, len);
+				// console.log(data);
 				offset += 4 + 4 + len;
 				chunks[id].push(parseRIFF(data));
-			} else if (id == 'WEBP') {
-				// Use (offset + 8) to skip past "VP8 "/"VP8L"/"VP8X" field after "WEBP"
-				chunks[id].push(string.substr(offset + 8));
+			} else if (id == "WEBP") {
+				let vpVersion = string.substr(offset + 4, 4);
+				switch (vpVersion) {
+					case "VP8X":
+						chunks[id].push(extractBitStreamFromVp8x(string.substr(offset + 8)));
+						break;
+					case "VP8 ":
+					case "VP8L":
+						// Use (offset + 8) to skip past "VP8 " / "VP8L" field after "WEBP"
+						chunks[id].push(string.substr(offset + 8));
+						break;
+					default:
+						console.error(`not supported webp version: \"${vpVersion}\"`);
+						break;
+				}
 				offset = string.length;
 			} else {
 				// Unknown chunk type; push entire payload

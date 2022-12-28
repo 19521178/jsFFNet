@@ -26,10 +26,22 @@ if (true) {
 
 var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContainer.listImage);
 
-// var videoEncoder = new Whammy.Video(fps);
+var videoEncoder = new Whammy.Video(fps);
+const blobToBase64 = blob => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    return new Promise(resolve => {
+        reader.onloadend = () => {
+            resolve(reader.result);
+        };
+    });
+};
+var vidName;
 // var lengthSegment = fps * 30;
 // var isFirstSegment = true;
 // var idStartSegment = 0;
+// var storeCanvas;
+// var storeCtx;
 
 var captureCanvas = document.getElementById('capture-canvas');
 var captureCtx;
@@ -57,18 +69,10 @@ async function readyWebgl(){
     await tf.setBackend(customBackendName);
     await tf.ready();
 }
-// readyWebgl();
 
 
 ldb.clear();
-// var storeCanvas;
-// var storeCtx;
 
-// const { createFFmpeg, fetchFile } = FFmpeg; //error happens here
-// const ffmpegInstance = createFFmpeg({
-//     corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
-//     log: true,
-// });
 
 
 var hiddenVideo = document.getElementById("hidden-video");
@@ -79,6 +83,7 @@ async function readVideo(files) {
     if (files && files[0]) {
         console.log('ON CHANGE');
         const file = files[0];
+        vidName = inputTag.value.split('\\').pop();
         let urlBlob = URL.createObjectURL(file);
         hiddenVideo.src = urlBlob;
         inputContainer.hiddenVideo.src = urlBlob;
@@ -142,16 +147,34 @@ hiddenVideo.onloadedmetadata = async () => {
     
 };
 
-function saveOutput(){
-    var videoEncoder = new Whammy.Video(fps);
-    for (let nameImg of outputContainer.listImage){
-        ldb.get(nameImg, (blob)=>{
-            let tmpURL = URL.createObjectURL(blob);
-            videoEncoder.add(tmpURL);
-            URL.revokeObjectURL(tmpURL);
-        });     
-    }
-    encoder.compile(false, function(output){console.log(output);});
+async function saveOutput(){
+    const allAppendPromises = outputContainer.listImage.map(nameImg=>{
+        return new Promise((resolve)=>{
+            ldb.get(nameImg, (blob)=>{
+                blobToBase64(blob).then(url=>{
+                    videoEncoder.add(url);
+                    resolve();
+                })
+            });     
+        })
+    })
+    await Promise.all(allAppendPromises);
+    await videoEncoder.compile(false, (vidBlob)=>{
+        // blobToBase64(vidBlob).then(url=>{
+        //     let a = document.createElement("a");
+        //     a.href = url;
+        //     a.download = vidName.split('.')[0] + '_VFF.webm';
+        //     document.body.appendChild(a);
+        //     a.click();
+        // })
+        let downloadURL = URL.createObjectURL(vidBlob);
+        let a = document.createElement("a");
+        a.href = downloadURL;
+        a.download = vidName.split('.')[0] + '_VFF.webm';
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(downloadURL);
+    });
 }
 
 function analystOutput(){
@@ -173,7 +196,7 @@ hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.textContent = 'Save Output';
     btnProcess.onclick = saveOutput;
     setTimeout(()=>{
-        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+        while(buffer.idPoint > 0){
             buffer.Expired();
         }
         outputContainer.fcUpdateVideoDuration();
