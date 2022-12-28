@@ -147,6 +147,40 @@ hiddenVideo.onloadedmetadata = async () => {
     
 };
 
+async function saveCSV (array, filename) {
+    // (A) ARRAY OF DATA
+
+    // (B) ARRAY TO CSV STRING
+    var csv = "";
+    for (let row of array) {
+        try {
+            for (let col of row) { csv += col + ","; }
+        } catch (error) {
+            csv += row + ',';
+            // console.log(error)
+        }
+        
+        csv += "\r\n";
+    }
+
+    // (C) CREATE BLOB OBJECT
+    var myBlob = new Blob([csv], {type: "text/csv"});
+
+    // (D) FILE HANDLER & FILE STREAM
+    const fileHandle = await window.showSaveFilePicker({
+        suggestedName : filename,
+        types: [{
+            description: "CSV file",
+            accept: {"text/csv": [".csv"]}
+        }]
+    });
+    const fileStream = await fileHandle.createWritable();
+
+    // (E) WRITE FILE
+    await fileStream.write(myBlob);
+    await fileStream.close();
+}
+
 async function saveOutput(){
     const allAppendPromises = outputContainer.listImage.map(nameImg=>{
         return new Promise((resolve)=>{
@@ -188,6 +222,8 @@ function analystOutput(){
         max = Math.max(max, x);
     })
     console.log('DelayTimes:\tmean:', sum/delayTimes.length, '\tmin:', min, '\tmax:', max);
+    saveCSV(delayTimes, 'delay-time.csv');
+
 }
 
 hiddenVideo.addEventListener('ended', ()=>{
