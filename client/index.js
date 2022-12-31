@@ -24,7 +24,7 @@ if (true) {
     outputContainer.videoControls.classList.remove('hidden');
 }
 
-var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContainer.listImage);
+var buffer = new BufferFrame(length=300, idMaxPoint=90, savedFrames=outputContainer.listImage);
 
 var videoEncoder;
 const blobToBase64 = blob => {
@@ -149,9 +149,7 @@ hiddenVideo.onloadedmetadata = async () => {
 };
 
 async function saveCSV (array, filename) {
-    // (A) ARRAY OF DATA
-
-    // (B) ARRAY TO CSV STRING
+    // (A) ARRAY TO CSV STRING
     try {
         var csv = "";
         for (let row of array) {
@@ -165,10 +163,10 @@ async function saveCSV (array, filename) {
             csv += "\r\n";
         }
 
-        // (C) CREATE BLOB OBJECT
+        // (B) CREATE BLOB OBJECT
         var myBlob = new Blob([csv], {type: "text/csv"});
 
-        // (D) FILE HANDLER & FILE STREAM
+        // (C) FILE HANDLER & FILE STREAM
         const fileHandle = await window.showSaveFilePicker({
             suggestedName : filename,
             types: [{
@@ -178,12 +176,12 @@ async function saveCSV (array, filename) {
         });
         const fileStream = await fileHandle.createWritable();
 
-        // (E) WRITE FILE
+        // (D) WRITE FILE
         await fileStream.write(myBlob);
         await fileStream.close();
     } catch (error) {
-        console.log(error);
-        // if (error !== DOMException.ABORT_ERR.){
+        console.log(error.message);
+        if (error.message !== 'The user aborted a request.'){
             console.log('Changing type of save file: .csv -> .txt');
             saveStr = array.join('\n');
             let a = document.createElement('a');
@@ -192,12 +190,13 @@ async function saveCSV (array, filename) {
             a.download = filename + '.txt';
             a.click();
             URL.revokeObjectURL(urlText);
-        // }
+        }
     }
     
 }
 
 async function saveOutput(){
+    var saveOutputStartTime = Date.now();
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
     saveCSV(delayTimes, 'delay-time');
@@ -224,21 +223,6 @@ async function saveOutput(){
         })
         await appendPromise;
     }
-    
-    // await videoEncoder.compile(false, (output)=>{delete allAppendPromises;});
-
-    // videoEncoder = new Whammy.Video(fps, outputQuality);
-    // allAppendPromises = outputContainer.listImage.map(nameImg=>{
-    //     return new Promise((resolve)=>{
-    //         ldb.get(nameImg, (blob)=>{
-    //             blobToBase64(blob).then(url=>{
-    //                 videoEncoder.add(url);
-    //                 resolve();
-    //             })
-    //         });     
-    //     })
-    // })
-    // await Promise.all(allAppendPromises);
     await videoEncoder.compile(false, async (vidBlob)=>{
         try {
             const fileHandle = await window.showSaveFilePicker({
@@ -250,20 +234,24 @@ async function saveOutput(){
             });
             const fileStream = await fileHandle.createWritable();
         
-            // (E) WRITE FILE
             await fileStream.write(vidBlob);
             await fileStream.close();
         } catch (error) {
             console.log(error);
-            console.log('USING OTHER WAY TO SAVE');
-            let downloadURL = URL.createObjectURL(vidBlob);
-            let a = document.createElement("a");
-            a.href = downloadURL;
-            a.download = vidName.split('.')[0] + '_VFF.webm';
-            document.body.appendChild(a);
-            a.click();
-            URL.revokeObjectURL(downloadURL);
-            document.body.removeChild(a);
+            if (error.message !== 'The user aborted a request.'){
+                console.log('DOWNLOADING DIRECTLY TO LOCAL');
+                let downloadURL = URL.createObjectURL(vidBlob);
+                let a = document.createElement("a");
+                a.href = downloadURL;
+                a.download = vidName.split('.')[0] + '_VFF.webm';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(downloadURL);
+                document.body.removeChild(a);
+            }
+            
+        } finally{
+            console.log("Saving output time:", Date.now() - saveOutputStartTime);
         }
         
 
@@ -319,6 +307,10 @@ btnProcess.onclick = ()=>{
             if (buffer.idPoint >= buffer.idMaxPoint){
                 buffer.Expired();
                 outputContainer.fcUpdateVideoDuration();
+            }
+            while((buffer.numMissExpired>0) && (buffer.idLastProccessed > buffer.idMaxPoint/2)){
+                buffer.Expired();
+                buffer.numMissExpired -= 1;
             }
             
 
