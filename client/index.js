@@ -4,27 +4,16 @@ var fps = 30;
 var getImgDataTimes = [];
 
 
-const inputContainer = new InputContainer(fps, 'input-video-container');
+var inputContainer = new InputContainer(fps, 'input-video-container');
 inputContainer.hiddenVideo.muted = true;
-if (true) {
-    // outputContainer.video.controls = false;
-    inputContainer.videoControls.classList.remove('hidden');
-}
-// const videoWorks = !!document.createElement('video').canPlayType;
-// if (videoWorks) {
-//     inputContainer.video.controls = false;
-//     inputContainer.videoControls.classList.remove('hidden');
-// }
+inputContainer.videoControls.classList.remove('hidden');
 
-const outputContainer = new OutputContainer(fps, 'output-video-container');
-// outputContainer.hiddenVideo.muted = true;
-// const videoWorks = !!document.createElement('video').canPlayType;
-if (true) {
-    // outputContainer.video.controls = false;
-    outputContainer.videoControls.classList.remove('hidden');
-}
+var outputContainer = new OutputContainer(fps, 'output-video-container');
+outputContainer.videoControls.classList.remove('hidden');
 
-var buffer = new BufferFrame(length=300, idMaxPoint=90, savedFrames=outputContainer.listImage);
+const LENGTH_BUFFER = 300;
+const ID_MAX_POINT_BUFFER = 90;
+var buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
 
 var videoEncoder;
 const blobToBase64 = blob => {
@@ -336,6 +325,43 @@ btnProcess.onclick = ()=>{
     }
 }
 
+var btnBackPage = document.getElementById('back-page');
+btnBackPage.onclick = ()=>{
+    // refresh outputContainer
+    outputContainer = new OutputContainer(fps, 'output-video-container');
+    outputContainer.videoControls.classList.remove('hidden');
+    outputContainer.fcUpdateVideoDuration();
+    outputContainer.fcUpdateTimeElapsed();
+    outputContainer.fcUpdatePlayButton();
+    outputContainer.fcUpdateProgress();
+    outputContainer.videoCtx.clearRect(0, 0, outputContainer.video.width, outputContainer.video.height);
+
+
+    // refresh inputContainer
+    inputContainer = new InputContainer(fps, 'input-video-container');
+    inputContainer.hiddenVideo.muted = true;
+    inputContainer.videoControls.classList.remove('hidden');
+    inputContainer.fcUpdateVideoDuration();
+    inputContainer.fcUpdateTimeElapsed();
+    inputContainer.fcUpdatePlayButton();
+    inputContainer.fcUpdateProgress();
+    inputContainer.videoCtx.clearRect(0, 0, inputContainer.video.width, inputContainer.video.height);
+
+    // refresh buffer
+    delete buffer;
+    buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
+
+    // refresh indexedDB
+    ldb.clear();
+
+    // refresh pre_c, pre_h
+    pre_h = tf.zeros([1, 256], tf.float32);
+    pre_c = tf.zeros([1, 256], tf.float32);
+
+    // hidden main-div
+    mainDiv.style.display = "none";
+	uploadDiv.style.display = "flex";
+}
 
 
 

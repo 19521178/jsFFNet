@@ -53,7 +53,6 @@ fileInput.addEventListener("change", (e) => {
 uploadButton.addEventListener("click", () => {
 	mainDiv.style.display = "block";
 	uploadDiv.style.display = "none";
-	
 });
 
 cancelAlertButton.addEventListener("click", () => {
