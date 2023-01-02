@@ -16,17 +16,7 @@ const ID_MAX_POINT_BUFFER = 90;
 var buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
 
 var videoEncoder;
-const blobToBase64 = blob => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    return new Promise(resolve => {
-        reader.onloadend = () => {
-            resolve(reader.result);
-        };
-    });
-};
 var vidName;
-var outputQuality = 1.0;
 // var lengthSegment = fps * 30;
 // var isFirstSegment = true;
 // var idStartSegment = 0;
@@ -189,23 +179,41 @@ async function saveOutput(){
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
     saveCSV(delayTimes, 'delay-time');
-    videoEncoder = new Whammy.Video(fps, outputQuality);
-    // let allAppendPromises = outputContainer.listImage.slice(0, 50).map(nameImg=>{
-    //     return new Promise((resolve)=>{
-    //         ldb.get(nameImg, (blob)=>{
-    //             blobToBase64(blob).then(url=>{
-    //                 videoEncoder.add(url);
-    //                 resolve();
-    //             })
-    //         });     
-    //     })
-    // })
-    // await Promise.all(allAppendPromises);
-    for (let nameImg of outputContainer.listImage){
+    // videoEncoder = new Whammy.Video(fps, outputQuality);
+    const saveOutputCanvas = document.createElement('canvas');
+    const saveOutputCtx = saveOutputCanvas.getContext('2d');
+    saveOutputCanvas.width = localStoreCanvas.width;
+    saveOutputCanvas.height = localStoreCanvas.height;
+    const width = localStoreCanvas.width;
+    const height = localStoreCanvas.height;
+    var saveOutputImg = new Image();
+    const blob2ImageBitmap = blob=>{
+        saveOutputImg.src = URL.createObjectURL(blob);
+        return new Promise(resolve => {
+            saveOutputImg.onload = async (event) => {
+                URL.revokeObjectURL(event.target.src);
+                await saveOutputCtx.drawImage(saveOutputImg, 0, 0);
+                const bitmap = await createImageBitmap(saveOutputCanvas);
+                // const bitmap = await createImageBitmap(saveOutputImg);
+                resolve(bitmap);
+            };
+        });
+    }
+
+
+    videoEncoder = await createEncoder(width, height, fps);
+    for (let i=0; i<outputContainer.listImage.length; i++){
+        let timestamp = 1 / fps * i;
+        let keyframe = i % 20 === 0;
+        let nameImg = outputContainer.listImage[i];
         appendPromise = new Promise((resolve)=>{
             ldb.get(nameImg, (blob)=>{
-                blobToBase64(blob).then(url=>{
-                    videoEncoder.add(url);
+                blob2ImageBitmap(blob).then(async (bitmap)=>{
+                    videoEncoder.addFrame(bitmap, keyframe, timestamp);
+                    if ((i + 1) % 10 === 0) {
+                        await videoEncoder.flush()
+                    }
+                    console.log('Add', nameImg, 'done');
                     resolve();
                 })
             });    
@@ -213,13 +221,24 @@ async function saveOutput(){
         await appendPromise;
     }
     console.log('SAVING OUTPUT: Add images successfully');
-    await videoEncoder.compile(false, async (vidBlob)=>{
+
+    const endAddImages = new Promise(async (resolve) => {
+        await videoEncoder.flush()
+        const buf = await videoEncoder.end();
+        console.log(buf);
+        console.log('SAVING OUTPUT: Compiled')
+        const blob = new Blob([buf], { type: "video/mp4" });
+        console.log(blob);
+        console.log("Saving output time:", Date.now() - saveOutputStartTime);
+        resolve(blob);
+    });
+    endAddImages.then(async (vidBlob)=>{
         try {
             const fileHandle = await window.showSaveFilePicker({
                 suggestedName : vidName.split('.')[0] + '_VFF',
                 types: [{
-                    description: "WEBM file",
-                    accept: {"video/webm": [".webm"]}
+                    description: "MP4 file",
+                    accept: {"video/mp4": [".mp4"]}
                 }]
             });
             const fileStream = await fileHandle.createWritable();
@@ -233,22 +252,20 @@ async function saveOutput(){
                 let downloadURL = URL.createObjectURL(vidBlob);
                 let a = document.createElement("a");
                 a.href = downloadURL;
-                a.download = vidName.split('.')[0] + '_VFF.webm';
+                a.download = vidName.split('.')[0] + '_VFF.mp4';
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(downloadURL);
                 document.body.removeChild(a);
             }
             
-        } finally{
-            console.log("Saving output time:", Date.now() - saveOutputStartTime);
         }
         
 
         
         btnProcess.textContent = 'Save Output';
         btnProcess.disabled = false;
-    });
+    })
 }
 
 function analystOutput(){

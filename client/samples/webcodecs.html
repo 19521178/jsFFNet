@@ -33,6 +33,7 @@
       const show = (data, width, height) => {
         // const url = URL.createObjectURL(new Blob([data], { type: "video/H264" }));
         const url = URL.createObjectURL(new Blob([data], { type: "video/mp4" }));
+        console.log('URL video/mp4:', url);
         const video = document.createElement("video");
         video.setAttribute("muted", "muted");
         video.setAttribute("autoplay", "autoplay");
@@ -94,7 +95,7 @@
           codec: 'avc1.640034',
           width: width,
           height: height,
-          bitrate: 8_000_000, // N Mbps
+          bitrate: 512000, // N Mbps
           framerate: fps,
         };
 
@@ -112,8 +113,8 @@
           addFrame (bitmap, keyFrame, time = 0) {
             time *= 1000000; // in microseconds
             let frame = new VideoFrame(bitmap, { timestamp: time });
-            const ret = encoder.encode(frame, { keyFrame });
-            frame.destroy();
+            const ret = encoder.encode(frame, { keyFrame: keyFrame });
+            frame.close();
           },
           flush () {
             return encoder.flush();
@@ -209,9 +210,13 @@
         
         function h264_write (chunk, opts) {
           let avccConfig = null;
-          if (opts.description) {
-            avccConfig = parseAVCC(opts.description);
+          if(opts.decoderConfig){
+            if (opts.decoderConfig.description) {
+              avccConfig = parseAVCC(opts.decoderConfig.description);
+            }
           }
+          
+          console.log(chunk, avccConfig);
 
           const nal = [];
           if (avccConfig) {
@@ -225,7 +230,7 @@
             });
           }
           
-          convertAVCToAnnexBInPlaceForLength4(chunk.data).forEach(sub => {
+          convertAVCToAnnexBInPlaceForLength4(chunk).forEach(sub => {
             nal.push(START_CODE);
             nal.push(sub);
           });
@@ -253,6 +258,7 @@
           if (frame >= totalFrames) {
             await encoder.flush()
             const buf = await encoder.end();
+            console.log('Result from encoder.end():', buf);
             console.timeEnd('encode');
 
             show(buf, width, height);
