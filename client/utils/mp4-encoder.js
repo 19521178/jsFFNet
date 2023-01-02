@@ -3,7 +3,7 @@
 
 var loadEncoder = (function() {
     // var _scriptDir = import.meta.url;
-    var _scriptDir = './utils/mp4-encoder.js';
+    var _scriptDir = 'https://19521178.github.io/jsFFNet/client/utils/mp4-encoder.js';
     
     return (
   function(Module) {

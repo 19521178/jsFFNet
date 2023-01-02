@@ -1,9 +1,9 @@
-// import loadEncoder from "./utils/mp4-encoder.js";
+const START_CODE = new Uint8Array([0, 0, 0, 1]);
 async function createEncoder (width, height, fps) {
     const Encoder = await loadEncoder();
 
-    // const encoderOutputs = [];
-    // const nalFrames = [];
+    const encoderOutputs = [];
+    const nalFrames = [];
     const mp4Outputs = [];
 
     const init = {
@@ -42,11 +42,13 @@ async function createEncoder (width, height, fps) {
             Encoder.finalize_encoder(mux);
             return concatBuffers(mp4Outputs);
         },
-        addFrame (bitmap, keyFrame, time = 0) {
+        async addFrame (bitmap, keyFrame, time = 0) {
             time *= 1000000; // in microseconds
-            let frame = new VideoFrame(bitmap, { timestamp: time });
-            const ret = encoder.encode(frame, { keyFrame });
-            frame.destroy();
+            let frame = await new VideoFrame(bitmap, { timestamp: time });
+            const ret = await encoder.encode(frame, { keyFrame: keyFrame });
+            frame.close();
+            // delete frame;
+            // frame.destroy();
         },
         flush () {
             return encoder.flush();
@@ -157,8 +159,9 @@ async function createEncoder (width, height, fps) {
                 nal.push(pps);
             });
         }
+
         
-        convertAVCToAnnexBInPlaceForLength4(chunk.data).forEach(sub => {
+        convertAVCToAnnexBInPlaceForLength4(chunk).forEach(sub => {
             nal.push(START_CODE);
             nal.push(sub);
         });

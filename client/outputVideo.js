@@ -230,7 +230,7 @@ const OutputContainer = function(fps, idContainer){
             // this.localStoreImg.src = this.imgSrc;
             // this.videoCtx.drawImage(this.localStoreImg, 0, 0);
             // this.videoControls.dispatchEvent(this.timeUpdateEvent);
-            this.localStoreImg.src = URL.createObjectURL(blob)
+            this.localStoreImg.src = URL.createObjectURL(blob);
             this.videoControls.dispatchEvent(this.timeUpdateEvent);
         });               
     }

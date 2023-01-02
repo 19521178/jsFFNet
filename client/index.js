@@ -180,10 +180,10 @@ async function saveOutput(){
     btnProcess.disabled = true;
     saveCSV(delayTimes, 'delay-time');
     // videoEncoder = new Whammy.Video(fps, outputQuality);
-    // const saveOutputCanvas = document.createElement('canvas');
-    // const saveOutputCtx = saveOutputCanvas.getContext('2d');
-    // saveOutputCanvas.width = localStoreCanvas.width;
-    // saveOutputCanvas.height = localStoreCanvas.height;
+    const saveOutputCanvas = document.createElement('canvas');
+    const saveOutputCtx = saveOutputCanvas.getContext('2d');
+    saveOutputCanvas.width = localStoreCanvas.width;
+    saveOutputCanvas.height = localStoreCanvas.height;
     const width = localStoreCanvas.width;
     const height = localStoreCanvas.height;
     var saveOutputImg = new Image();
@@ -192,7 +192,9 @@ async function saveOutput(){
         return new Promise(resolve => {
             saveOutputImg.onload = async (event) => {
                 URL.revokeObjectURL(event.target.src);
-                const bitmap = await createImageBitmap(saveOutputImg);
+                await saveOutputCtx.drawImage(saveOutputImg, 0, 0);
+                const bitmap = await createImageBitmap(saveOutputCanvas);
+                // const bitmap = await createImageBitmap(saveOutputImg);
                 resolve(bitmap);
             };
         });
@@ -211,6 +213,7 @@ async function saveOutput(){
                     if ((i + 1) % 10 === 0) {
                         await videoEncoder.flush()
                     }
+                    console.log('Add', nameImg, 'done');
                     resolve();
                 })
             });    
@@ -222,8 +225,11 @@ async function saveOutput(){
     const endAddImages = new Promise(async (resolve) => {
         await videoEncoder.flush()
         const buf = await videoEncoder.end();
+        console.log(buf);
         console.log('SAVING OUTPUT: Compiled')
         const blob = new Blob([buf], { type: "video/mp4" });
+        console.log(blob);
+        console.log("Saving output time:", Date.now() - saveOutputStartTime);
         resolve(blob);
     });
     endAddImages.then(async (vidBlob)=>{
@@ -253,8 +259,6 @@ async function saveOutput(){
                 document.body.removeChild(a);
             }
             
-        } finally{
-            console.log("Saving output time:", Date.now() - saveOutputStartTime);
         }
         
 
