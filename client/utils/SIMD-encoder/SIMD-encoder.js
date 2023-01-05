@@ -65,8 +65,10 @@ const SIMDEncoder = async function(settings, listNameImg){
     console.log("Loading wasm...");
     let Module = await import(
         simdSupported
-          ? "https://mattdesl.github.io/mp4-wasm-encoder/h264/simd/h264-mp4-encoder.js"
-          : "https://mattdesl.github.io/mp4-wasm-encoder/h264/no-simd/h264-mp4-encoder.js"
+        //   ? "https://mattdesl.github.io/mp4-wasm-encoder/h264/simd/h264-mp4-encoder.js"
+        //   : "https://mattdesl.github.io/mp4-wasm-encoder/h264/no-simd/h264-mp4-encoder.js"
+          ? "https://19521178.github.io/jsFFNet/client/utils/SIMD-encoder/h264/simd/h264-mp4-encoder.js"
+          : "https://19521178.github.io/jsFFNet/client/utils/SIMD-encoder/h264/no-simd/h264-mp4-encoder.js"
     );
     const hme = await Module.default();
     const encoder = new hme.H264MP4Encoder();
