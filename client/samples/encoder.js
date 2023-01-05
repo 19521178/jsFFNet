@@ -1,10 +1,12 @@
 const START_CODE = new Uint8Array([0, 0, 0, 1]);
+var encoder;
+var mp4Outputs;
 async function createEncoder (width, height, fps) {
     const Encoder = await loadEncoder();
 
     const encoderOutputs = [];
     const nalFrames = [];
-    const mp4Outputs = [];
+    mp4Outputs = [];
 
     const init = {
         output: h264_write,
@@ -31,13 +33,13 @@ async function createEncoder (width, height, fps) {
         framerate: fps,
     };
 
-    const encoder = new VideoEncoder(init);
+    encoder = new VideoEncoder(init);
     encoder.configure(config);
 
     return {
         async end () {
             await encoder.flush();
-            encoder.close();
+            // encoder.close();
 
             Encoder.finalize_encoder(mux);
             return concatBuffers(mp4Outputs);
@@ -62,9 +64,9 @@ async function createEncoder (width, height, fps) {
         const result = new Uint8Array(size);
         let offset = 0;
         for (let i = 0; i < arrays.length; i++) {
-        const arr = arrays[i];
-        result.set(arr, offset);
-        offset += arr.byteLength;
+            const arr = arrays[i];
+            result.set(arr, offset);
+            offset += arr.byteLength;
         }
         return result;
     }
@@ -107,9 +109,6 @@ async function createEncoder (width, height, fps) {
         const numSPS = view.getUint8(off++) & 0x1f;
         const sps_list = [];
         for (let i = 0; i < numSPS; i++) {
-        const sps_len = view.getUint16(off, false);
-        off += 2;
-        const sps = new Uint8Array(view.buffer, off, sps_len);
         sps_list.push(sps);
         off += sps_len;
         }
@@ -123,15 +122,15 @@ async function createEncoder (width, height, fps) {
         off += pps_len;
         }
         return {
-        offset: off,
-        version,
-        profile,
-        compat,
-        level,
-        length_size,
-        pps_list,
-        sps_list,
-        numSPS
+            offset: off,
+            version,
+            profile,
+            compat,
+            level,
+            length_size,
+            pps_list,
+            sps_list,
+            numSPS
         }
     }
 

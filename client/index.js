@@ -16,17 +16,7 @@ const ID_MAX_POINT_BUFFER = 90;
 var buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
 
 var videoEncoder;
-const blobToBase64 = blob => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    return new Promise(resolve => {
-        reader.onloadend = () => {
-            resolve(reader.result);
-        };
-    });
-};
 var vidName;
-var outputQuality = 1.0;
 // var lengthSegment = fps * 30;
 // var isFirstSegment = true;
 // var idStartSegment = 0;
@@ -188,38 +178,33 @@ async function saveOutput(){
     var saveOutputStartTime = Date.now();
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
-    saveCSV(delayTimes, 'delay-time');
-    videoEncoder = new Whammy.Video(fps, outputQuality);
-    // let allAppendPromises = outputContainer.listImage.slice(0, 50).map(nameImg=>{
-    //     return new Promise((resolve)=>{
-    //         ldb.get(nameImg, (blob)=>{
-    //             blobToBase64(blob).then(url=>{
-    //                 videoEncoder.add(url);
-    //                 resolve();
-    //             })
-    //         });     
-    //     })
-    // })
-    // await Promise.all(allAppendPromises);
-    for (let nameImg of outputContainer.listImage){
-        appendPromise = new Promise((resolve)=>{
-            ldb.get(nameImg, (blob)=>{
-                blobToBase64(blob).then(url=>{
-                    videoEncoder.add(url);
-                    resolve();
-                })
-            });    
+    // saveCSV(delayTimes, 'delay-time');
+    
+    const settings = {
+        context: "webgl",
+        fps: fps,
+        dimensions: [localStoreCanvas.width, localStoreCanvas.height], //width, height,
+        totalFrames: outputContainer.listImage.length
+    };  
+    const simdEncoder = await SIMDEncoder(settings, outputContainer.listImage);
+
+    const endEncoding = new Promise(async (resolve) => {
+        simdEncoder.startEncoding((buf)=>{
+            console.log(buf);
+            console.log('SAVING OUTPUT: Compiled')
+            const blob = new Blob([buf], { type: "video/mp4" });
+            console.log(blob);
+            console.log("Saving output time:", Date.now() - saveOutputStartTime);
+            resolve(blob);
         })
-        await appendPromise;
-    }
-    console.log('SAVING OUTPUT: Add images successfully');
-    await videoEncoder.compile(false, async (vidBlob)=>{
+    });
+    endEncoding.then(async (vidBlob)=>{
         try {
             const fileHandle = await window.showSaveFilePicker({
                 suggestedName : vidName.split('.')[0] + '_VFF',
                 types: [{
-                    description: "WEBM file",
-                    accept: {"video/webm": [".webm"]}
+                    description: "MP4 file",
+                    accept: {"video/mp4": [".mp4"]}
                 }]
             });
             const fileStream = await fileHandle.createWritable();
@@ -233,22 +218,20 @@ async function saveOutput(){
                 let downloadURL = URL.createObjectURL(vidBlob);
                 let a = document.createElement("a");
                 a.href = downloadURL;
-                a.download = vidName.split('.')[0] + '_VFF.webm';
+                a.download = vidName.split('.')[0] + '_VFF.mp4';
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(downloadURL);
                 document.body.removeChild(a);
             }
             
-        } finally{
-            console.log("Saving output time:", Date.now() - saveOutputStartTime);
         }
         
 
         
         btnProcess.textContent = 'Save Output';
         btnProcess.disabled = false;
-    });
+    })
 }
 
 function analystOutput(){

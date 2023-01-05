@@ -11,8 +11,8 @@ async function loadMobileNet(){
     try {
         MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
         console.log(MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
-        alert('Models loaded');
         uploadButton.disabled = false;
+        alert('Models loaded');
         // return model;
     } catch (err) {
         console.log(err);
@@ -64,11 +64,6 @@ function preprocess(img){
         let output = normalImg.expandDims(0);
         return output;
     })
-    
-    normalImg.dispose();
-    cropImg.dispose();
-    resizeImg.dispose();
-    return output;
 }
 
 function extract(inputTensor){
