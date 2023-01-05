@@ -178,7 +178,7 @@ async function saveOutput(){
     var saveOutputStartTime = Date.now();
     btnProcess.textContent = 'Saving';
     btnProcess.disabled = true;
-    // saveCSV(delayTimes, 'delay-time');
+    saveCSV(delayTimes, 'delay-time');
     
     const settings = {
         context: "webgl",
@@ -258,7 +258,6 @@ hiddenVideo.addEventListener('ended', async ()=>{
     }
     outputContainer.fcUpdateVideoDuration();
     analystOutput();
-
 })
 
 var btnProcess = document.getElementById('play-process');
