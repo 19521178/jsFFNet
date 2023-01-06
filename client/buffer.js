@@ -87,10 +87,10 @@ function BufferFrame(length, idMaxPoint, savedFrames){
         // await syncWait(tf.backend().getGPGPUContext().gl); 
     }
 
-    this.numMissExpired = 0;
+    // this.numMissExpired = 0;
     this.Expired = function(){
         // var start_expire_time = Date.now();
-        if (this.idLastProccessed > 0){
+        // if (this.idLastProccessed > 0){
             this.countExpired+=1;
             // Pop first element and push new init element to tail
             let expiredFrame = this.listFrames.shift();
@@ -118,10 +118,10 @@ function BufferFrame(length, idMaxPoint, savedFrames){
             delete expiredFrame.time;
             delete expiredFrame.isSelected;
             
-        }
-        else{
-            this.numMissExpired += 1;
-        }
+        // }
+        // else{
+        //     this.numMissExpired += 1;
+        // }
         // var end_expire_time = Date.now();
         // expireTimes.push(end_expire_time-start_expire_time);
         

@@ -280,10 +280,10 @@ btnProcess.onclick = ()=>{
                 buffer.Expired();
                 outputContainer.fcUpdateVideoDuration();
             }
-            while((buffer.numMissExpired>0) && (buffer.idLastProccessed > buffer.idMaxPoint/2)){
-                buffer.Expired();
-                buffer.numMissExpired -= 1;
-            }
+            // while((buffer.numMissExpired>0) && (buffer.idLastProccessed > buffer.idMaxPoint/2)){
+            //     buffer.Expired();
+            //     buffer.numMissExpired -= 1;
+            // }
             
 
             // if (outputContainer.listImage.length >= idStartSegment + lengthSegment){

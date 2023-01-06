@@ -1,4 +1,4 @@
-// import { simd } from "https://unpkg.com/wasm-feature-detect?module";
+import { simd } from "https://unpkg.com/wasm-feature-detect?module";
 
 const SIMDEncoder = async function(settings, listNameImg){
     // settings = {
