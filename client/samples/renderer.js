@@ -15,6 +15,60 @@ const context2DAttributes = {
 };
 
 const dictBlob = {};
+const Dictionary = ()=>{
+  let _idPop = 0;
+  let _length = 0;
+  const dict = {};
+  const _keyToString = (key)=>{
+    if (typeof(key) !== 'string'){
+      return key.toString();
+    }
+    return key;
+  }
+  const add = (key, value)=>{
+    const _key = _keyToString(key);
+    if (dict[_key]===undefined) _length++;
+    dict[_key] = value;
+  }
+  const del = (key)=>{
+    const _key = _keyToString(key);
+    if (dict[_key]!==undefined){
+      delete dict[_key];
+      _length--;
+    }
+  }
+  const deleteAll = ()=>{
+    delete dict;
+    _length = 0;
+  }
+  const get = (key)=>{
+    const _key = _keyToString(key);
+    return dict[_key];
+  }
+  const pop = ()=>{
+    const _key = _idPop.toString();
+    const value = dict[_key];
+    del(_key);
+    if (value !== undefined) _idPop++;
+    return {
+      idPop: _idPop-1,
+      value
+    };
+  }
+  const getLength = ()=>{
+    return _length;
+  }
+
+  return {
+    dict,
+    add,
+    del,
+    deleteAll,
+    get,
+    pop,
+    getLength
+  }
+}
 
 const isOffscreenSupported = (() => {
   if (typeof self.OffscreenCanvas === "undefined") return false;
@@ -260,16 +314,20 @@ async function start(settings, config) {
   });
 
   let queue = [];
+  let dictFrame = Dictionary();
   self.addEventListener("message", async ({ data }) => {
     if (data === "frame") {
-      if (queue.length === 0) {
+      // if (queue.length === 0) {
+      if (dictFrame.getLength() === 0){
         // no queued frames, just render and post one immediately
         postFrame(await nextFrame());
       } else {
         // we have some frames queued, take from start
-        const frame = queue.shift();
+        // const frame = queue.shift();
+        let {idPop, value} = dictFrame.pop();
+        if (value ===undefined) value = 'delay';
 
-        postFrame(frame);
+        postFrame({idCurrFrame: idPop, frame: value});
       }
     }
     else if(data.event === 'upblob'){
@@ -281,22 +339,22 @@ async function start(settings, config) {
     }
   });
 
-  let loop = ()=>{
-    return new Promise(async (resolve)=>{
-      console.log('loop add queue');
-      if (finished){
-        resolve();
-        console.log('finish loop add queue');
-        return;
-      };
-      // we have room in our queue
-      if (queue.length < frameQueueLimit) {
-        const frame = await nextFrame();
-        queue.push(frame);
-        resolve(loop());
-      }
-    })
-  }
+  // let loop = ()=>{
+  //   return new Promise(async (resolve)=>{
+  //     console.log('loop add queue');
+  //     if (finished){
+  //       resolve();
+  //       console.log('finish loop add queue');
+  //       return;
+  //     };
+  //     // we have room in our queue
+  //     if (queue.length < frameQueueLimit) {
+  //       const frame = await nextFrame();
+  //       queue.push(frame);
+  //       resolve(loop());
+  //     }
+  //   })
+  // }
   // loop();
   // let loop = new Promise(async (resolve)=>{
   //   if (finished) return;
@@ -308,19 +366,25 @@ async function start(settings, config) {
   //   }
   // })
   
-  // const throttle = 0;
-  // let loop = setInterval(async () => {
-  //   if (finished) return;
-  //   // we have room in our queue
-  //   if (queue.length < frameQueueLimit) {
-  //     const frame = await nextFrame();
-  //     queue.push(frame);
-  //   }
-  // }, throttle);
+  const throttle = 0;
+  let loop = setInterval(async () => {
+    if (finished) return;
+    // we have room in our queue
+    // if (queue.length < frameQueueLimit) {
+    if (dictFrame.getLength() < frameQueueLimit) {
+      const data = await nextFrame();
+
+      const {idCurrFrame, frame} = await nextFrame();
+      // queue.push(frame);
+      dictFrame.add(idCurrFrame, frame);
+    }
+  }, throttle);
 
   postFrame(await nextFrame());
 
-  function postFrame(frame) {
+  function postFrame(data) {
+    const {idCurrFrame, frame} = data;
+    console.log('WW - post id', idCurrFrame);
     // console.log('WW-result:', frame);
     if (frame == null) {
       self.postMessage("finish");
@@ -336,7 +400,7 @@ async function start(settings, config) {
     if (idFrame >= totalFrames) {
       finished = true;
       clearInterval(loop);
-      return null; // end event
+      return {idCurrFrame, frame:null}; // end event
     }
     idFrame++;
     const frame = await render.next(idCurrFrame);
@@ -345,7 +409,7 @@ async function start(settings, config) {
       idFrame--;
       console.log(`Not found idFrame ${idFrame} in dictBlob`);
     }
-    return frame;
+    return {idCurrFrame, frame};
 
     // return await render.next(idFrame)
     // .then(()=>{
