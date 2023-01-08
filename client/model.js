@@ -7,32 +7,51 @@ var pre_c = tf.zeros([1, 256], tf.float32);
 
 // var actions = [];
 
-async function loadMobileNet(){
-    try {
-        MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
-        console.log(MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
+function loadMobileNet(){
+    return new Promise(async (resolve, reject)=>{
+        try {
+            MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
+            console.log(await MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
+            resolve();
+            // return model;
+        } catch (err) {
+            console.log(err);
+            console.log("failed load MobileNet");
+            reject('failed load MobileNet');
+        }
+    })
+    
+}
+function loadLSTMNet(){
+    return new Promise(async (resolve, reject)=>{
+        try {
+            LSTMNET = await tf.loadGraphModel(MODEL_LSTM_URL);
+            console.log(await LSTMNET.executeAsync([pre_h, pre_c, tf.randomNormal([1, 960], tf.float32)]));
+            resolve();
+            // model.predict();
+            // return model;
+        } catch (err) {
+            console.log(err);
+            console.log("failed load LSTM");
+            reject('failed load LSTM')
+        }
+    })
+    
+}
+
+
+tf.ready()
+.then(async ()=>{
+    Promise.all([loadMobileNet(), loadLSTMNet()])
+    .then(()=>{
         uploadButton.disabled = false;
         alert('Models loaded');
-        // return model;
-    } catch (err) {
-        console.log(err);
-        console.log("failed load model");
-    }
-}
-async function loadLSTMNet(){
-    try {
-        LSTMNET = await tf.loadGraphModel(MODEL_LSTM_URL);
-        console.log(LSTMNET.executeAsync([pre_h, pre_c, tf.randomNormal([1, 960], tf.float32)]));
-        // model.predict();
-        // return model;
-    } catch (err) {
-        console.log(err);
-        console.log("failed load model");
-    }
-}
-
-
-tf.ready().then(loadMobileNet()).then(loadLSTMNet());
+    });
+    
+})
+.then((error)=>{
+    if (error) console.log('Initialize Tensorflow Backend failed');
+})
 
 const RESIZE_SIZE = 256;
 const CROP_SIZE = 224;

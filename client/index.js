@@ -47,7 +47,7 @@ async function readyWebgl(){
             new tf.GPGPUContext(localStoreGlCtx));
     });
     await tf.setBackend(customBackendName);
-    await tf.ready();
+    // await tf.ready();
 }
 
 

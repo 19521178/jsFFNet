@@ -115,7 +115,7 @@ const SIMDEncoder = async function(settings, listNameImg){
         encoder.quantizationParameter = 10;
         encoder.speed = 10; // adjust to taste
         encoder.frameRate = fps;
-        // encoder.groupOfPictures = fps; // adjust to taste
+        // encoder.groupOfPictures = Math.round(fps/2); // adjust to taste
         encoder.debug = false;
         encoder.initialize();
     
@@ -183,7 +183,7 @@ const SIMDEncoder = async function(settings, listNameImg){
                         event: 'upblob',
                         idBlob,
                         blob
-                    })
+                    });
                 });
             // })(idBlob);
         }
