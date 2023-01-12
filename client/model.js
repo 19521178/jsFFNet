@@ -12,7 +12,9 @@ async function loadMobileNet(){
         MOBILENET = await tf.loadGraphModel(MODEL_MOBILE_URL);
         console.log(MOBILENET.predict(tf.randomNormal([1, 224, 224, 3])));
         alert('Models loaded');
-        uploadButton.disabled = false;
+        while(uploadButton.disabled){
+            uploadButton.disabled = false;
+        }
         // return model;
     } catch (err) {
         console.log(err);
