@@ -154,6 +154,10 @@ body {
   padding: 7.5px 50px;
   cursor: pointer;
 }
+.upload-button:disabled{
+  opacity: 0.5;
+  cursor:default;
+}
 
 .container {
   width: 100%;
@@ -488,6 +492,8 @@ svg {
 
 .button-27:disabled {
   pointer-events: none;
+  opacity: 0.5;
+  cursor:default;
 }
 
 .button-27:hover {
