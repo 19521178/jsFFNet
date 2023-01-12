@@ -376,8 +376,8 @@ const InputContainer = function(fps, idContainer){
     this.videoControls.addEventListener('mouseleave', this.fcHideControls.bind(this));
     this.seek.addEventListener('mousemove', this.fcUpdateSeekTooltip.bind(this));
     this.seek.addEventListener('input', this.fcSkipAhead.bind(this));
-    this.volume.addEventListener('input', this.fcUpdateVolume.bind(this));
-    this.volumeButton.addEventListener('click', this.fcToggleMute.bind(this));
+    // this.volume.addEventListener('input', this.fcUpdateVolume.bind(this));
+    // this.volumeButton.addEventListener('click', this.fcToggleMute.bind(this));
     this.fullscreenButton.addEventListener('click', this.fcToggleFullScreen.bind(this));
     this.inputVideoContainer.addEventListener('fullscreenchange', this.fcUpdateFullscreenButton.bind(this));
     this.pipButton.addEventListener('click', this.fcTogglePip.bind(this));
