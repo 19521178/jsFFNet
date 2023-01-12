@@ -280,12 +280,13 @@ const InputContainer = function(fps, idContainer){
         } else if (document.webkitFullscreenElement) {
             // Need this to support Safari
             document.webkitExitFullscreen();
-        } else if (this.videoContainer.webkitRequestFullscreen) {
+        } else if (this.inputVideoContainer.webkitRequestFullscreen) {
             // Need this to support Safari
-            this.videoContainer.webkitRequestFullscreen();
+            this.inputVideoContainer.webkitRequestFullscreen();
         } else {
-            this.videoContainer.requestFullscreen();
+            this.inputVideoContainer.requestFullscreen();
         }
+        this.inputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
     }
 
     // updateFullscreenButton changes the icon of the full screen button

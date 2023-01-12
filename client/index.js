@@ -142,17 +142,17 @@ hiddenVideo.onloadedmetadata = async () => {
     
 };
 
-function saveOutput(){
-    var videoEncoder = new Whammy.Video(fps);
-    for (let nameImg of outputContainer.listImage){
-        ldb.get(nameImg, (blob)=>{
-            let tmpURL = URL.createObjectURL(blob);
-            videoEncoder.add(tmpURL);
-            URL.revokeObjectURL(tmpURL);
-        });     
-    }
-    encoder.compile(false, function(output){console.log(output);});
-}
+// function saveOutput(){
+//     var videoEncoder = new Whammy.Video(fps);
+//     for (let nameImg of outputContainer.listImage){
+//         ldb.get(nameImg, (blob)=>{
+//             let tmpURL = URL.createObjectURL(blob);
+//             videoEncoder.add(tmpURL);
+//             URL.revokeObjectURL(tmpURL);
+//         });     
+//     }
+//     encoder.compile(false, function(output){console.log(output);});
+// }
 
 function analystOutput(){
     console.log('num_cookie:', buffer.countCookie, '=> fps:', buffer.countCookie/hiddenVideo.currentTime);
@@ -169,11 +169,11 @@ function analystOutput(){
 
 hiddenVideo.addEventListener('ended', ()=>{
     btnProcess.click();
-    // btnProcess.disabled = true;
-    btnProcess.textContent = 'Save Output';
-    btnProcess.onclick = saveOutput;
+    btnProcess.disabled = true;
+    btnProcess.textContent = 'The End';
+    // btnProcess.onclick = saveOutput;
     setTimeout(()=>{
-        while(buffer.idPoint > 0 && btnProcess.textContent==='Start'){
+        while(buffer.idPoint > 0){
             buffer.Expired();
         }
         outputContainer.fcUpdateVideoDuration();
