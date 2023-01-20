@@ -4,27 +4,16 @@ var fps = 30;
 var getImgDataTimes = [];
 
 
-const inputContainer = new InputContainer(fps, 'input-video-container');
+var inputContainer = new InputContainer(fps, 'input-video-container');
 inputContainer.hiddenVideo.muted = true;
-if (true) {
-    // outputContainer.video.controls = false;
-    inputContainer.videoControls.classList.remove('hidden');
-}
-// const videoWorks = !!document.createElement('video').canPlayType;
-// if (videoWorks) {
-//     inputContainer.video.controls = false;
-//     inputContainer.videoControls.classList.remove('hidden');
-// }
+inputContainer.videoControls.classList.remove('hidden');
 
-const outputContainer = new OutputContainer(fps, 'output-video-container');
-// outputContainer.hiddenVideo.muted = true;
-// const videoWorks = !!document.createElement('video').canPlayType;
-if (true) {
-    // outputContainer.video.controls = false;
-    outputContainer.videoControls.classList.remove('hidden');
-}
+var outputContainer = new OutputContainer(fps, 'output-video-container');
+outputContainer.videoControls.classList.remove('hidden');
 
-var buffer = new BufferFrame(length=150, idMaxPoint=90, savedFrames=outputContainer.listImage);
+const LENGTH_BUFFER = 300;
+const ID_MAX_POINT_BUFFER = 90;
+var buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
 
 // var videoEncoder = new Whammy.Video(fps);
 // var lengthSegment = fps * 30;
@@ -242,7 +231,7 @@ btnProcess.onclick = ()=>{
 // }
 
 var btnBackPage = document.getElementById('back-page');
-btnBackPage.onclick = ()=>{
+btnBackPage.onclick = async ()=>{
     // refresh outputContainer
     outputContainer = new OutputContainer(fps, 'output-video-container');
     outputContainer.videoControls.classList.remove('hidden');
@@ -264,6 +253,13 @@ btnBackPage.onclick = ()=>{
     inputContainer.videoCtx.clearRect(0, 0, inputContainer.video.width, inputContainer.video.height);
 
     // refresh buffer
+    for (let bufferFrame of buffer.listFrames){
+        try {
+            await bufferFrame.image.dispose();
+        } catch (error) {
+            
+        }
+    }
     delete buffer;
     buffer = new BufferFrame(length=LENGTH_BUFFER, idMaxPoint=ID_MAX_POINT_BUFFER, savedFrames=outputContainer.listImage);
 
@@ -277,6 +273,10 @@ btnBackPage.onclick = ()=>{
     // hidden main-div
     mainDiv.style.display = "none";
 	uploadDiv.style.display = "flex";
+
+    // process button
+    btnProcess.disabled = false;
+    btnProcess.textContent = 'Start';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
