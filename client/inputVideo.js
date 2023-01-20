@@ -47,6 +47,7 @@ const InputContainer = function(fps, idContainer){
     this.fcAnimatePlayback = animatePlayback;
     this.fcToggleFullScreen = toggleFullScreen;
     this.fcUpdateFullscreenButton = updateFullscreenButton;
+    // this.fcOnEscDown = onKeyDown;
     this.fcTogglePip = togglePip;
     this.fcHideControls = hideControls;
     this.fcShowControls = showControls;
@@ -286,7 +287,7 @@ const InputContainer = function(fps, idContainer){
         } else {
             this.inputVideoContainer.requestFullscreen();
         }
-        this.inputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
+        // this.inputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
     }
 
     // updateFullscreenButton changes the icon of the full screen button
@@ -301,6 +302,18 @@ const InputContainer = function(fps, idContainer){
         }
     }
 
+    function onKeyDown (e) {
+        console.log("Get envent Keydown");
+        if (e && e.code === "Escape") {
+            console.log("Get Escape Keydown");
+            console.log(this.fullscreenIcons[0]);
+            if (this.fullscreenIcons[0].classList.contains('hidden')){
+                console.log(this.fullscreenIcons[0].classList);
+                this.inputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
+            }
+        }
+    }
+    
     // togglePip toggles Picture-in-Picture mode on the video
     async function togglePip() {
         try {
@@ -382,6 +395,7 @@ const InputContainer = function(fps, idContainer){
     this.fullscreenButton.addEventListener('click', this.fcToggleFullScreen.bind(this));
     this.inputVideoContainer.addEventListener('fullscreenchange', this.fcUpdateFullscreenButton.bind(this));
     this.pipButton.addEventListener('click', this.fcTogglePip.bind(this));
+    
 }
 
 

@@ -333,7 +333,7 @@ const OutputContainer = function(fps, idContainer){
         } else {
             this.outputVideoContainer.requestFullscreen();
         }
-        this.outputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
+        // this.outputVideoContainer.dispatchEvent(new Event('fullscreenchange'));
     }
 
     // updateFullscreenButton changes the icon of the full screen button

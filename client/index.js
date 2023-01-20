@@ -284,3 +284,35 @@ document.addEventListener('DOMContentLoaded', () => {
         inputContainer.pipButton.classList.add('hidden');
     }
 });
+
+var idFullScreenElement = '';
+const ID_INPUT_CONTAINER = 'input-video-container';
+const ID_OUTPUT_CONTAINER = 'output-video-container';
+
+onFullScreenChange = ()=>{
+    if (!document.fullscreenElement){
+        if (idFullScreenElement === ID_INPUT_CONTAINER){
+            inputContainer.fcUpdateFullscreenButton();
+        }
+        else if (idFullScreenElement === ID_OUTPUT_CONTAINER){
+            outputContainer.fcUpdateFullscreenButton();
+        }
+        idFullScreenElement = '';
+    }
+    else if (document.fullscreenElement.id === ID_INPUT_CONTAINER){
+        idFullScreenElement = ID_INPUT_CONTAINER;
+        inputContainer.fcUpdateFullscreenButton();
+    }
+    else if (document.fullscreenElement.id === ID_OUTPUT_CONTAINER){
+        idFullScreenElement = ID_OUTPUT_CONTAINER;
+        outputContainer.fcUpdateFullscreenButton();
+    }
+    
+}
+
+if (document.addEventListener) {
+    document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+    document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+    document.addEventListener('fullscreenchange', onFullScreenChange, false);
+    document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
+}
