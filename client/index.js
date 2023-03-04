@@ -233,15 +233,19 @@ btnProcess.onclick = ()=>{
 var btnBackPage = document.getElementById('back-page');
 btnBackPage.onclick = async ()=>{
     // pause all vid
-    inputContainer.pause();
-    outputContainer.pause();
+    if (inputContainer.isPlaying){
+        inputContainer.fcTogglePlay();
+    }
+    if (outputContainer.isPlaying){
+        outputContainer.fcTogglePlay();
+    }
 
     // refresh outputContainer
     outputContainer = new OutputContainer(fps, 'output-video-container');
     outputContainer.videoControls.classList.remove('hidden');
     outputContainer.fcUpdateVideoDuration();
     outputContainer.fcUpdateTimeElapsed();
-    outputContainer.fcUpdatePlayButton();
+    // outputContainer.fcUpdatePlayButton();
     outputContainer.fcUpdateProgress();
     outputContainer.videoCtx.clearRect(0, 0, outputContainer.video.width, outputContainer.video.height);
 
@@ -252,7 +256,7 @@ btnBackPage.onclick = async ()=>{
     inputContainer.videoControls.classList.remove('hidden');
     inputContainer.fcUpdateVideoDuration();
     inputContainer.fcUpdateTimeElapsed();
-    inputContainer.fcUpdatePlayButton();
+    // inputContainer.fcUpdatePlayButton();
     inputContainer.fcUpdateProgress();
     inputContainer.videoCtx.clearRect(0, 0, inputContainer.video.width, inputContainer.video.height);
 

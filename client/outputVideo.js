@@ -125,9 +125,9 @@ const OutputContainer = function(fps, idContainer){
         this.playbackIcons.forEach((icon) => icon.classList.toggle('hidden'));
 
         if (this.isPlaying) {
-            this.playButton.setAttribute('data-title', 'Play (k)');
+            this.playButton.setAttribute('data-title', 'Play');
         } else {
-            this.playButton.setAttribute('data-title', 'Pause (k)');
+            this.playButton.setAttribute('data-title', 'Pause');
         }
     }
 
@@ -342,9 +342,9 @@ const OutputContainer = function(fps, idContainer){
         this.fullscreenIcons.forEach((icon) => icon.classList.toggle('hidden'));
 
         if (document.fullscreenElement) {
-            this.fullscreenButton.setAttribute('data-title', 'Exit full screen (f)');
+            this.fullscreenButton.setAttribute('data-title', 'Exit full screen');
         } else {
-            this.fullscreenButton.setAttribute('data-title', 'Full screen (f)');
+            this.fullscreenButton.setAttribute('data-title', 'Full screen');
         }
     }
 
