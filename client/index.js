@@ -232,6 +232,10 @@ btnProcess.onclick = ()=>{
 
 var btnBackPage = document.getElementById('back-page');
 btnBackPage.onclick = async ()=>{
+    // pause all vid
+    inputContainer.pause();
+    outputContainer.pause();
+
     // refresh outputContainer
     outputContainer = new OutputContainer(fps, 'output-video-container');
     outputContainer.videoControls.classList.remove('hidden');
