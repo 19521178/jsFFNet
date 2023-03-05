@@ -36,25 +36,25 @@ const OutputContainer = function(fps, idContainer){
     this.fps = fps;
     this.renderInterval;
 
-    this.fcTogglePlay = togglePlay;
-    this.fcUpdatePlayButton = updatePlayButton;
-    this.fcInitializeVideo = initializeVideo;
-    this.fcUpdateVideoDuration = updateVideoDuration;
-    this.fcUpdateTimeElapsed = updateTimeElapsed;
-    this.fcStoreFrame = storeFrame;
-    this.fcUpdateProgress = updateProgress;
-    this.fcUpdateSeekTooltip = updateSeekTooltip;
-    this.fcSkipAhead = skipAhead;
-    this.fcUpdateVolume = updateVolume;
-    this.fcUpdateVolumeIcon = updateVolumeIcon;
-    this.fcToggleMute = toggleMute;
-    this.fcAnimatePlayback = animatePlayback;
-    this.fcToggleFullScreen = toggleFullScreen;
-    this.fcUpdateFullscreenButton = updateFullscreenButton;
-    this.fcTogglePip = togglePip;
-    this.fcHideControls = hideControls;
-    this.fcShowControls = showControls;
-    this.fcKeyboardShortcuts = keyboardShortcuts;
+    this.fcTogglePlay = togglePlay.bind(this);
+    this.fcUpdatePlayButton = updatePlayButton.bind(this);
+    this.fcInitializeVideo = initializeVideo.bind(this);
+    this.fcUpdateVideoDuration = updateVideoDuration.bind(this);
+    this.fcUpdateTimeElapsed = updateTimeElapsed.bind(this);
+    // this.fcStoreFrame = storeFrame.bind(this);
+    this.fcUpdateProgress = updateProgress.bind(this);
+    this.fcUpdateSeekTooltip = updateSeekTooltip.bind(this);
+    this.fcSkipAhead = skipAhead.bind(this);
+    this.fcUpdateVolume = updateVolume.bind(this);
+    this.fcUpdateVolumeIcon = updateVolumeIcon.bind(this);
+    this.fcToggleMute = toggleMute.bind(this);
+    this.fcAnimatePlayback = animatePlayback.bind(this);
+    this.fcToggleFullScreen = toggleFullScreen.bind(this);
+    this.fcUpdateFullscreenButton = updateFullscreenButton.bind(this);
+    this.fcTogglePip = togglePip.bind(this);
+    this.fcHideControls = hideControls.bind(this);
+    this.fcShowControls = showControls.bind(this);
+    this.fcKeyboardShortcuts = keyboardShortcuts.bind(this);
 
     // togglePlay toggles the playback state of the video.
     // If the video playback is paused or ended, the video is played
@@ -125,9 +125,9 @@ const OutputContainer = function(fps, idContainer){
         this.playbackIcons.forEach((icon) => icon.classList.toggle('hidden'));
 
         if (this.isPlaying) {
-            this.playButton.setAttribute('data-title', 'Play');
-        } else {
             this.playButton.setAttribute('data-title', 'Pause');
+        } else {
+            this.playButton.setAttribute('data-title', 'Play');
         }
     }
 
@@ -411,26 +411,46 @@ const OutputContainer = function(fps, idContainer){
     this.localStoreImg.addEventListener('load', ()=>{
         this.videoCtx.drawImage(this.localStoreImg, 0, 0);
     })
-    this.playButton.addEventListener('click', this.fcTogglePlay.bind(this));
-    // this.video.addEventListener('play', this.fcUpdatePlayButton.bind(this));
-    // this.video.addEventListener('pause', this.fcUpdatePlayButton.bind(this));
-    // this.video.addEventListener('loadedmetadata', this.fcInitializeVideo.bind(this));
-    this.videoControls.addEventListener('timeupdate', this.fcUpdateTimeElapsed.bind(this));
-    this.videoControls.addEventListener('timeupdate', this.fcUpdateProgress.bind(this));
-    // this.video.addEventListener('timeupdate', this.fcStoreFrame.bind(this));
-    // this.video.addEventListener('volumechange', this.fcUpdateVolumeIcon.bind(this));
-    this.video.addEventListener('click', this.fcTogglePlay.bind(this));
-    this.video.addEventListener('click', this.fcAnimatePlayback.bind(this));
-    this.video.addEventListener('mouseenter', this.fcShowControls.bind(this));
-    this.video.addEventListener('mouseleave', this.fcHideControls.bind(this));
-    this.videoControls.addEventListener('mouseenter', this.fcShowControls.bind(this));
-    this.videoControls.addEventListener('mouseleave', this.fcHideControls.bind(this));
-    this.seek.addEventListener('mousemove', this.fcUpdateSeekTooltip.bind(this));
-    this.seek.addEventListener('input', this.fcSkipAhead.bind(this));
-    // this.volume.addEventListener('input', this.fcUpdateVolume.bind(this));
-    // this.volumeButton.addEventListener('click', this.fcToggleMute.bind(this));
-    this.fullscreenButton.addEventListener('click', this.fcToggleFullScreen.bind(this));
-    this.outputVideoContainer.addEventListener('fullscreenchange', this.fcUpdateFullscreenButton.bind(this));
-    this.pipButton.addEventListener('click', this.fcTogglePip.bind(this));
+    this.playButton.addEventListener('click', this.fcTogglePlay);
+    // this.video.addEventListener('play', this.fcUpdatePlayButton);
+    // this.video.addEventListener('pause', this.fcUpdatePlayButton);
+    // this.video.addEventListener('loadedmetadata', this.fcInitializeVideo);
+    this.videoControls.addEventListener('timeupdate', this.fcUpdateTimeElapsed);
+    this.videoControls.addEventListener('timeupdate', this.fcUpdateProgress);
+    // this.video.addEventListener('timeupdate', this.fcStoreFrame);
+    // this.video.addEventListener('volumechange', this.fcUpdateVolumeIcon);
+    this.video.addEventListener('click', this.fcTogglePlay);
+    this.video.addEventListener('click', this.fcAnimatePlayback);
+    this.video.addEventListener('mouseenter', this.fcShowControls);
+    this.video.addEventListener('mouseleave', this.fcHideControls);
+    this.videoControls.addEventListener('mouseenter', this.fcShowControls);
+    this.videoControls.addEventListener('mouseleave', this.fcHideControls);
+    this.seek.addEventListener('mousemove', this.fcUpdateSeekTooltip);
+    this.seek.addEventListener('input', this.fcSkipAhead);
+    // this.volume.addEventListener('input', this.fcUpdateVolume);
+    // this.volumeButton.addEventListener('click', this.fcToggleMute);
+    this.fullscreenButton.addEventListener('click', this.fcToggleFullScreen);
+    this.outputVideoContainer.addEventListener('fullscreenchange', this.fcUpdateFullscreenButton);
+    this.pipButton.addEventListener('click', this.fcTogglePip);
+
+    
+
+    function removeEventListener(){
+        this.playButton.removeEventListener('click', this.fcTogglePlay);
+        this.videoControls.removeEventListener('timeupdate', this.fcUpdateTimeElapsed);
+        this.videoControls.removeEventListener('timeupdate', this.fcUpdateProgress);
+        this.video.removeEventListener('click', this.fcTogglePlay);
+        this.video.removeEventListener('click', this.fcAnimatePlayback);
+        this.video.removeEventListener('mouseenter', this.fcShowControls);
+        this.video.removeEventListener('mouseleave', this.fcHideControls);
+        this.videoControls.removeEventListener('mouseenter', this.fcShowControls);
+        this.videoControls.removeEventListener('mouseleave', this.fcHideControls);
+        this.seek.removeEventListener('mousemove', this.fcUpdateSeekTooltip);
+        this.seek.removeEventListener('input', this.fcSkipAhead);
+        this.fullscreenButton.removeEventListener('click', this.fcToggleFullScreen);
+        this.outputVideoContainer.removeEventListener('fullscreenchange', this.fcUpdateFullscreenButton);
+        this.pipButton.removeEventListener('click', this.fcTogglePip);
+    }
+    this.fcRemoveEventListener = removeEventListener;
 }
 

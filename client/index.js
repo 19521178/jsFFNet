@@ -240,6 +240,11 @@ btnBackPage.onclick = async ()=>{
         outputContainer.fcTogglePlay();
     }
 
+    inputContainer.fcRemoveEventListener();
+    outputContainer.fcRemoveEventListener();
+    delete inputContainer;
+    delete outputContainer;
+
     // refresh outputContainer
     outputContainer = new OutputContainer(fps, 'output-video-container');
     outputContainer.videoControls.classList.remove('hidden');
